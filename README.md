@@ -133,7 +133,7 @@ You will need to do the following for both gem_a and gem_b. I will use the below
 
 # Keeping all the Grafana's in sync
 - TO DO
-https://raintank-corp.slack.com/archives/D036V2SRMJB/p1659101789389449
+See chat with Aengus in chat
 
 # Reconsiling data after a failure
 - TO DO

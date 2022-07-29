@@ -1,0 +1,47 @@
+grafana.ini:
+  log:
+    level: debug
+  enterprise:
+    license_path: /etc/grafana/license/license.jwt
+  server:
+    root_url: http://${ge_ip}:3000/
+  auth.generic_oauth:
+    enabled: true
+    scopes: openid email profile
+    name: Oauth
+    allow_sign_up: true
+    tls_skip_verify_insecure: true
+    client_id: ${oidc_client_id}
+    client_secret: ${oidc_client_secret}
+    auth_url: ${oidc_auth_url}
+    token_url: ${oidc_token_url}
+    api_url: ${oidc_userinfo_url}
+    role_attribute_path: ${grafana_role_attribute_path}
+  database:
+    type: mysql
+    host: ${database_host}
+    user: ${database_user}
+    password: ${database_password}
+    ssl_mode: false
+  white_labeling:
+    login_title: "Grafana ${region}"
+    login_logo: ""
+
+service:
+  type: LoadBalancer
+  port: 3000
+  loadBalancerIP: ${ge_ip}
+
+extraSecretMounts:
+  - name: ge-secrets
+    mountPath: /etc/grafana/license
+    secretName: ge-secrets
+
+admin:
+  existingSecret: "ge-secrets"
+  userKey: admin_user
+  passwordKey: admin_password
+
+image:
+  repository: grafana/grafana-enterprise
+  tag: latest

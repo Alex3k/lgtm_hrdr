@@ -1,0 +1,69 @@
+config:
+  cluster_label_value: ${cluster_label_value}
+  remote_write_url_a: ${remote_write_url_a}
+  remote_write_url_b: ${remote_write_url_b}
+  tenant_name: ${tenant_name}
+  client_id: ${client_id}
+  client_secret: ${client_secret}
+  oidc_token_url: ${oidc_token_url}
+  agent_config: |
+    server:
+      log_level: info
+    metrics:
+      wal_directory: /var/lib/agent/wal
+      global:
+        scrape_interval: 60s
+        external_labels:
+          cluster: {{ .Values.config.cluster_label_value }}
+      configs:
+      - name: integrations
+        remote_write:
+        - url: {{ .Values.config.remote_write_url_a }}
+          headers:
+            tenant: {{ .Values.config.tenant_name }}
+          oauth2:
+            client_id: {{ .Values.config.client_id }}
+            client_secret: {{ .Values.config.client_secret }}
+            token_url: {{ .Values.config.oidc_token_url }}
+        - url: {{ .Values.config.remote_write_url_b }}
+          headers:
+            tenant: {{ .Values.config.tenant_name }}
+          oauth2:
+            client_id: {{ .Values.config.client_id }}
+            client_secret: {{ .Values.config.client_secret }}
+            token_url: {{ .Values.config.oidc_token_url }}
+        scrape_configs:
+        - job_name: integrations/kubernetes/cadvisor
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          kubernetes_sd_configs:
+            - role: node
+          relabel_configs:
+            - replacement: kubernetes.default.svc:443
+              target_label: __address__
+            - regex: (.+)
+              replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+              source_labels:
+                - __meta_kubernetes_node_name
+              target_label: __metrics_path__
+          scheme: https
+          tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: false
+              server_name: kubernetes
+        - job_name: integrations/kubernetes/kubelet
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          kubernetes_sd_configs:
+            - role: node
+          relabel_configs:
+            - replacement: kubernetes.default.svc:443
+              target_label: __address__
+            - regex: (.+)
+              replacement: /api/v1/nodes/$1/proxy/metrics
+              source_labels:
+                - __meta_kubernetes_node_name
+              target_label: __metrics_path__
+          scheme: https
+          tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: false
+              server_name: kubernetes

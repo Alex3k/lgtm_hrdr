@@ -1,0 +1,8 @@
+kind: ConfigMap
+metadata:
+  name: grafana-agent
+  namespace: default
+apiVersion: v1
+data:
+  agent.yaml: 
+    {{ (tpl .Values.config.agent_config  . | toYaml) | indent 4 }}

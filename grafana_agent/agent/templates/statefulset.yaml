@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "grafana-agent.fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "grafana-agent.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "grafana-agent.fullname" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "grafana-agent.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - args:
+        - -config.file=/etc/agent/agent.yaml
+        - -enable-features=integrations-next
+        - -server.http.address=0.0.0.0:{{ .Values.service.port }}
+        command:
+        - /bin/agent
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: {{ .Chart.Name }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+          name: http-metrics
+        volumeMounts:
+        - mountPath: /var/lib/agent
+          name: agent-wal
+        - mountPath: /etc/agent
+          name: grafana-agent
+      serviceAccount: grafana-agent
+      volumes:
+      - configMap:
+          name: grafana-agent
+        name: grafana-agent
+  updateStrategy:
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: agent-wal
+      namespace: default
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi

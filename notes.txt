@@ -1,0 +1,14 @@
+
+https://lemur-14.cloud-iam.com/auth/admin/gem-oidc/console/#/realms/gem-oidc
+
+
+Automate GEM LB
+Grafana Agent HA
+Go down to 1 node per zone?
+GEM zone affinity
+Grafana Agent secret in file
+
+
+
+
+

@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "authproxy.fullname" . }}-config
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        listen 80;
+
+        location /status {
+          return 200;
+        }
+
+        location /prometheus {
+          set $prom_auth_bearer $http_authorization;
+
+          proxy_hide_header authorization;
+
+          if ($prom_auth_bearer ~ "^Bearer (.+)$" ) { 
+            set $prom_auth_bearer "Bearer $http_tenant:$1";
+          }
+          proxy_set_header authorization $prom_auth_bearer;
+
+          proxy_set_header tenant "";
+
+          proxy_pass {{ .Values.gem.gateway}}:{{ .Values.gem.port }}/api/v1/push;
+        }
+
+         location ~ /gem/{{ .Values.gem.prometheusHttpPrefix }}/(.*)$ {
+          set $promPath $1;
+          
+          set $bearer "Bearer "; 
+
+          proxy_set_header x_id_token "";
+          proxy_set_header tenant "";
+          
+          proxy_set_header authorization "Bearer $http_tenant:$http_x_id_token";
+
+          proxy_pass {{ .Values.gem.gateway}}:{{ .Values.gem.port }}/{{ .Values.gem.prometheusHttpPrefix}}/$promPath;
+        }
+
+        location ~ /gem/(.*)$ {
+          set $gemPath $1;
+          proxy_pass {{ .Values.gem.gateway}}:{{ .Values.gem.port }}/$gemPath;
+        }
+
+      }
+    }
+    

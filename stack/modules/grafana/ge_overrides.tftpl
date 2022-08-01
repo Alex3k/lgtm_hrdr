@@ -1,3 +1,5 @@
+replicas: 1
+
 grafana.ini:
   log:
     level: debug
@@ -45,3 +47,24 @@ admin:
 image:
   repository: grafana/grafana-enterprise
   tag: latest
+
+plugins: 
+  - "grafana-metrics-enterprise-app"
+
+sidecar:
+  plugins:
+    enabled: true
+    reloadURL: "http://${ge_ip}:3000/api/admin/provisioning/plugins/reload"
+
+affinity: 
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - grafana
+        topologyKey: topology.kubernetes.io/zone

@@ -22,15 +22,9 @@ variable "gcp_region" {
   nullable    = false
 }
 
-variable "gcp_service_account_name" {
+variable "gke_cluster_name" {
   type        = string
-  description = "The service account name that will be created as part of this process. Must be unique."
-  nullable    = false
-}
-
-variable "gcp_gem_gke_cluster_name" {
-  type        = string
-  description = "The GKE cluster that will be created as part of this process. Must be unique."
+  description = "The name of the GKE cluster GEM will be deployed to"
   nullable    = false
 }
 

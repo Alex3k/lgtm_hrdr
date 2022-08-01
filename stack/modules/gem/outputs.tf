@@ -1,7 +1,4 @@
 
-output "kubectl_cmd" {
-  value = "gcloud container clusters get-credentials ${var.gcp_gem_gke_cluster_name} --region ${var.gcp_region} --project ${var.gcp_project_id}"
-}
 
 output "gem_token_override" {
   value = var.gem_admin_token_override

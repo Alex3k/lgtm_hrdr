@@ -30,7 +30,7 @@ variable "owner_name" {
 
 variable "gke_cluster_name" {
   type        = string
-  description = "The GKE cluster that you want to connect to and deploy GE into."
+  description = "The name of the GKE cluster GEM will be deployed to"
   nullable    = false
 }
 
@@ -99,6 +99,20 @@ variable "oidc_userinfo_url" {
 variable "grafana_role_attribute_path" {
   type        = string
   description = "The role attribute path that maps the OIDC user roles to Grafana roles."
+  nullable    = false
+  sensitive   = false
+}
+
+variable "gem_token" {
+  type        = string
+  description = "The Access Token to configure and connect to GEM"
+  nullable    = false
+  sensitive   = true
+}
+
+variable "gem_endpoint" {
+  type        = string
+  description = "The endpoint to configure and connect to GEM"
   nullable    = false
   sensitive   = false
 }

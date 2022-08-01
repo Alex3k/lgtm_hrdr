@@ -35,44 +35,32 @@ variable "oidc_token_url" {
   nullable    = false
 }
 
-variable "agent_a_gcp_region" {
+variable "gcp_region" {
   type        = string
   description = "The region to deploy everything in"
   nullable    = false
 }
 
-variable "agent_b_gcp_region" {
-  type        = string
-  description = "The region to deploy everything in"
-  nullable    = false
-}
-
-variable "agent_a_gke_cluster_name" {
-  type        = string
-  description = "The GKE cluster that you want to connect to and deploy grafana agent into."
-  nullable    = false
-}
-
-variable "agent_b_gke_cluster_name" {
+variable "gke_cluster_name" {
   type        = string
   description = "The GKE cluster that you want to connect to and deploy grafana agent into."
   nullable    = false
 }
 
 variable "remote_write_url_a" {
-  type = string
+  type        = string
   description = "The URL that should be used for region a"
   nullable    = false
 }
 
 variable "remote_write_url_b" {
-  type = string
+  type        = string
   description = "The URL that should be used for region b"
   nullable    = false
 }
 
 variable "tenant_name" {
-  type = string
+  type        = string
   description = "The tenant to send data to"
   nullable    = false
 }

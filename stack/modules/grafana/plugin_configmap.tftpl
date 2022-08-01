@@ -1,0 +1,11 @@
+apiVersion: 1
+apps:
+  - type: grafana-metrics-enterprise-app
+    org_id: 1
+    disabled: false
+    jsonData:
+      adminApiVersion: v1
+      base64EncodedAccessTokenSet: true
+      backendUrl: ${url}
+    secureJsonData:
+      token: ${token}

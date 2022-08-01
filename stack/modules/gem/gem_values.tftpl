@@ -5,12 +5,6 @@ alertmanager:
   persistentVolume:
     enabled: true
   replicas: 1
-  #resources:
-  #  limits:
-  #    memory: 8Gi
-  #  requests:
-  #    cpu: 300m
-  #    memory: 1Gi
   statefulSet:
     enabled: true
   env:
@@ -30,15 +24,9 @@ alertmanager:
         path: gcp_service_account.json
 
 compactor:
+  replicas: 3
   persistentVolume:
     size: 50Gi
-  #resources:
-  #  limits:
-  #    cpu: 1200m
-  #    memory: 2Gi
-  #  requests:
-  #    cpu: 1
-  #    memory: 1Gi
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -54,15 +42,21 @@ compactor:
         path: license.jwt
       - key: gcp_service_account.json
         path: gcp_service_account.json
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - compactor
+          topologyKey: topology.kubernetes.io/zone
 
 distributor:
-  replicas: 1
-  #resources:
-  #  limits:
-  #    memory: 4Gi
-  #  requests:
-  #    cpu: 2
-  #    memory: 2Gi
+  replicas: 3
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -78,27 +72,35 @@ distributor:
         path: license.jwt
       - key: gcp_service_account.json
         path: gcp_service_account.json
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - distributor
+          topologyKey: topology.kubernetes.io/zone
 
 ingester:
   persistentVolume:
     size: 50Gi
-  replicas: 2
-  #resources:
-  #  limits:
-  #    memory: 25Gi
-  #  requests:
-  #    cpu: 4
-  #    memory: 15Gi
-  affinity:
+  replicas: 3
+  affinity: 
     podAntiAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
             matchExpressions:
-              - key: target
-                operator: In
-                values:
-                  - ingester
-          topologyKey: 'kubernetes.io/hostname'
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - ingester
+          topologyKey: topology.kubernetes.io/zone
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -134,12 +136,6 @@ minio:
 
 overrides_exporter:
   replicas: 1
-  #resources:
-  #  limits:
-  #    memory: 256Mi
-  #  requests:
-  #    cpu: 100m
-  #    memory: 128Mi
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -157,13 +153,7 @@ overrides_exporter:
         path: gcp_service_account.json
 
 querier:
-  replicas: 1
-  #resources:
-  #  limits:
-  #    memory: 24Gi
-  #  requests:
-  #    cpu: 1
-  #    memory: 12Gi
+  replicas: 3
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -179,15 +169,21 @@ querier:
         path: license.jwt
       - key: gcp_service_account.json
         path: gcp_service_account.json
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - querier
+          topologyKey: topology.kubernetes.io/zone
 
 query_frontend:
-  replicas: 1
-  #resources:
-  #  limits:
-  #    memory: 6Gi
-  #  requests:
-  #    cpu: 2
-  #    memory: 2Gi
+  replicas: 3
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -203,15 +199,21 @@ query_frontend:
         path: license.jwt
       - key: gcp_service_account.json
         path: gcp_service_account.json
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - query-frontend
+          topologyKey: topology.kubernetes.io/zone
 
 ruler:
-  replicas: 1
-  #resources:
-  #  limits:
-  #    memory: 16Gi
-  #  requests:
-  #    cpu: 1
-  #    memory: 6Gi
+  replicas: 3
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -227,15 +229,23 @@ ruler:
         path: license.jwt
       - key: gcp_service_account.json
         path: gcp_service_account.json
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - ruler
+          topologyKey: topology.kubernetes.io/zone
 
 store_gateway:
   persistentVolume:
     size: 50Gi
-  replicas: 1
-  #resources:
-  #  requests:
-  #    cpu: 1
-  #    memory: 6Gi
+  replicas: 3
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -251,16 +261,21 @@ store_gateway:
         path: license.jwt
       - key: gcp_service_account.json
         path: gcp_service_account.json
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - authproxy
+          topologyKey: topology.kubernetes.io/zone
 
 admin_api:
   replicas: 1
-  #resources:
-  #  limits:
-  #    cpu: 200m
-  #    memory: 256Mi
-  #  requests:
-  #    cpu: 10m
-  #    memory: 64Mi
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -279,10 +294,6 @@ admin_api:
 
 gateway:
   replicas: 3
-  #resources:
-  #  requests:
-  #    cpu: 1
-  #    memory: 384Mi
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: "/etc/gem_secrets/gcp_service_account.json"
@@ -298,6 +309,18 @@ gateway:
         path: license.jwt
       - key: gcp_service_account.json
         path: gcp_service_account.json
+  affinity: 
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - gateway
+          topologyKey: topology.kubernetes.io/zone
 
 tokengenJob:
   enable: true

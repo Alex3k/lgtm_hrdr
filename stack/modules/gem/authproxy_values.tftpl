@@ -13,8 +13,8 @@ service:
 resources: {}
 
 autoscaling:
-  enabled: false
-  minReplicas: 1
+  enabled: true
+  minReplicas: 3
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 
@@ -24,11 +24,13 @@ tolerations: []
 
 affinity: 
   podAntiAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-    - labelSelector:
-        matchExpressions:
-        - key: app.kubernetes.io/name
-          operator: In
-          values:
-          - authproxy
-      topologyKey: topology.kubernetes.io/zone
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - authproxy
+        topologyKey: topology.kubernetes.io/zone

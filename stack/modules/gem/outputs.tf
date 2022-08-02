@@ -5,11 +5,11 @@ output "gem_token_override" {
 }
 
 output "gem_endpoint" {
-  value = "http://${helm_release.auth_proxy.id}/gem"
+  value = "http://${google_compute_address.auth_proxy_ip.address}/gem"
 }
 
 output "gem_datasource_endpoint" {
-  value = "http://${helm_release.auth_proxy.id}/gem/prometheus"
+  value = "http://${google_compute_address.auth_proxy_ip.address}/gem/prometheus"
 }
 
 output "authproxy_external_ip" {

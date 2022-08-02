@@ -133,8 +133,8 @@ module "grafana_agent_a" {
   gcp_region = var.gcp_region_a
 
   gke_cluster_name   = google_container_cluster.region_a.name
-  remote_write_url_a = module.gem_a.gem_datasource_endpoint
-  remote_write_url_b = module.gem_b.gem_datasource_endpoint
+  remote_write_url_a = "${module.gem_a.authproxy_external_ip}/prometheus"
+  remote_write_url_b = "${module.gem_b.authproxy_external_ip}/prometheus"
   tenant_name        = var.data_shipper_tenant_name
   oidc_client_id     = var.data_shipper_oidc_client_id
   oidc_client_secret = var.data_shipper_oidc_client_secret
@@ -283,8 +283,8 @@ module "grafana_agent_b" {
   oidc_client_secret = var.data_shipper_oidc_client_secret
   oidc_token_url     = var.data_shipper_oidc_token_url
 
-  remote_write_url_a = module.gem_a.gem_datasource_endpoint
-  remote_write_url_b = module.gem_b.gem_datasource_endpoint
+  remote_write_url_a = "${module.gem_a.authproxy_external_ip}/prometheus"
+  remote_write_url_b = "${module.gem_b.authproxy_external_ip}/prometheus"
 
   providers = {
     google     = google,

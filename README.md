@@ -106,7 +106,6 @@ This client will be used as the common client that Grafana and GEM will use for 
 You will need to do the following for both gem_a and gem_b. I will use the below steps for gem_a, please repeat accordingly for gem_b replacing grafana_a and gem_a with grafana_b and gem_b respectively.
 1. Get the IP address of grafana_a from running `terraform output` within the stack directory. 
 2. Log in with your configured OAuth user
-3. Go back to the gem directory and run `terraform output`
 4. Set the plugin token to be the output from terraform called "gem_token_override". Also set the "Grafana Enterprise Metrics URL" to be gem_a_endpoint from terraform output
 5. Create a tenant, I will call it "tenant1"
 6. Create an access policy for this tenant. I will call it tenant1-ap. I have also ticked all permissions and selected the tenant1 tenant
@@ -128,6 +127,8 @@ Go into the stack directory and use the below:
 See chat with Aengus in chat
 
 # Reconsiling data after a failure
-- TO DO
-Git Ops
+In the event where there is a major DR event and an entire region goes offline, you would need to perform data reconsilation when the region comes back on line to ensure that both region a and region b are back in sync. This could also happen if the network is unavailable within a region from the data shippers or a regions GEM cluster goes offline. The agent (if using Grafana Agent/Promtail/etc) should buffer the data for a period of time (depending on settings). So if it's a short outage the agent will ship the buffered data once back online. However this is a finate period of time.
 
+Another option is to deploy Kafka between your data shippers and GEM to buffer data for as long as required by your Recovery Point Objective (RPO). However that is out of scope of this project.
+
+An alternative option is once both regions are operational again, the object store from the region that stayed live can be duplicated to the object store which went offline. This way it would ensure the historical data is in sync whilst both recieve latest data. This could be a very costly and long exercise and is out of scope of this project.

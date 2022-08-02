@@ -1,12 +1,6 @@
 
 https://lemur-14.cloud-iam.com/auth/admin/gem-oidc/console/#/realms/gem-oidc
 
-Change GKE cluster name (gcp_gke_cluster_name_a) from gem to akc-hadr-uscentral and apply to b
 Set up grafana ingress
-Grafana Agent HA
-Grafana Agent secret in file
-Data reconsilation after a failure instructions in README
 GitOps for Grafana notes in README
-
-Where I am 
-    Verify GE plugin config works
+Grafana Agent HA

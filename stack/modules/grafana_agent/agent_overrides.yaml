@@ -1,11 +1,6 @@
 config:
-  cluster_label_value: ${cluster_label_value}
-  remote_write_url_a: ${remote_write_url_a}
-  remote_write_url_b: ${remote_write_url_b}
-  tenant_name: ${tenant_name}
-  client_id: ${client_id}
   client_secret: ${client_secret}
-  oidc_token_url: ${oidc_token_url}
+
   agent_config: |
     server:
       log_level: info
@@ -14,24 +9,24 @@ config:
       global:
         scrape_interval: 60s
         external_labels:
-          cluster: {{ .Values.config.cluster_label_value }}
+          cluster: ${cluster_label_value}
       configs:
       - name: integrations
         remote_write:
-        - url: {{ .Values.config.remote_write_url_a }}
+        - url: ${remote_write_url_a}
           headers:
-            tenant: {{ .Values.config.tenant_name }}
+            tenant: ${tenant_name}
           oauth2:
-            client_id: {{ .Values.config.client_id }}
-            client_secret: {{ .Values.config.client_secret }}
-            token_url: {{ .Values.config.oidc_token_url }}
-        - url: {{ .Values.config.remote_write_url_b }}
+            client_id: ${client_id}
+            client_secret_file: {{ .Values.config.client_secret_path }}/client_secret
+            token_url: ${oidc_token_url}
+        - url: ${remote_write_url_b}
           headers:
-            tenant: {{ .Values.config.tenant_name }}
+            tenant: ${tenant_name}
           oauth2:
-            client_id: {{ .Values.config.client_id }}
-            client_secret: {{ .Values.config.client_secret }}
-            token_url: {{ .Values.config.oidc_token_url }}
+            client_id: ${client_id}
+            client_secret_file: {{ .Values.config.client_secret_path }}/client_secret
+            token_url: ${oidc_token_url}
         scrape_configs:
         - job_name: integrations/kubernetes/cadvisor
           bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token

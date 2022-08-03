@@ -36,11 +36,16 @@ spec:
           name: agent-wal
         - mountPath: /etc/agent
           name: grafana-agent
+        - mountPath: {{ .Values.config.client_secret_path }}
+          name: client-secret
       serviceAccount: grafana-agent
       volumes:
-      - configMap:
+      - name: grafana-agent
+        configMap:
           name: grafana-agent
-        name: grafana-agent
+      - name: client-secret
+        secret:
+          secretName: {{ include "grafana-agent.fullname" . }}-oidc
   updateStrategy:
     type: RollingUpdate
   volumeClaimTemplates:

@@ -90,14 +90,14 @@ This client will be used as the common client that Grafana and GEM will use for 
 
 ## Step 1) Getting a Static IP address for Grafana Instances
 1. Go into the ge_infra folder
-2. Update the vars.tfvars file to have relevant variables for you
+2. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
 3. `terraform init`
 4. `terraform apply -var-file vars.tfvars`
 5. This will output two ip addresses. Create one GE license with the Grafana Enterprise Metrics Plugin and Grafana Enterprise modules for each ip address and save them. Make sure you point to these licenses and update the IP Addresses with the stack vars.tfvars 
 
 ## Step 2) Deploying everything else
 1. Go into the stack folder
-2. Update the vars.tfvars file to have relevant variables for you
+2. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
 3. `terraform init`
 4. `terraform apply -var-file vars.tfvars`
 5. ** Note: The Grafana Agent won't ship data until you've configured the Enterprise Metrics Plugin (see below) **

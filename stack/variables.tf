@@ -170,29 +170,28 @@ variable "oidc_userinfo_url" {
 // --------------------------------------------------------
 // Grafana Enterprise Variables
 
-variable "grafana_a_gcp_region" {
-  type        = string
-  default     = "us-central1"
-  description = "The region to deploy everything in"
-  nullable    = false
-}
-
-
-variable "grafana_a_ip_address" {
+variable "grafana_global_ip_address" {
   type        = string
   description = "The IP address that GE will be using which is outputted from the env_setup process"
   nullable    = false
 }
 
-variable "grafana_a_license_file" {
+variable "grafana_global_license_file" {
   type        = string
   description = "The file path to the GE license file."
   nullable    = false
 
   validation {
-    condition     = fileexists(var.grafana_a_license_file)
+    condition     = fileexists(var.grafana_global_license_file)
     error_message = "The file must exist"
   }
+}
+
+variable "grafana_a_gcp_region" {
+  type        = string
+  default     = "us-central1"
+  description = "The region to deploy everything in"
+  nullable    = false
 }
 
 variable "grafana_a_deployment_name" {
@@ -215,22 +214,6 @@ variable "grafana_b_gcp_region" {
   nullable    = false
 }
 
-variable "grafana_b_ip_address" {
-  type        = string
-  description = "The IP address that GE will be using which is outputted from the env_setup process"
-  nullable    = false
-}
-
-variable "grafana_b_license_file" {
-  type        = string
-  description = "The file path to the GE license file."
-  nullable    = false
-
-  validation {
-    condition     = fileexists(var.grafana_b_license_file)
-    error_message = "The file must exist"
-  }
-}
 
 variable "grafana_b_deployment_name" {
   type        = string

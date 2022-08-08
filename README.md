@@ -8,12 +8,28 @@ For each region this project will deploy spread
 - Grafana Enterprise (GE) deployed across three zones
 - Grafana Agent pushing metrics from the kubernetes cluster to both regions GEM (Dual write)
 
+# Required utilities on your machine
+- Terraform - https://learn.hashicorp.com/tutorials/terraform/install-cli
+- GCP GCloud - https://cloud.google.com/sdk/docs/install
+- JQ - https://stedolan.github.io/jq/download/
+
+# Terraform K8s Workaround
+Within the Grafana Helm Chart, we add an annotation to the service ` cloud.google.com/neg: '{"exposed_ports":{"3000":{}}}'` this created Network Endpoint Groups in GCP. This is required to have a Global Load Balancer. The challenge is that this is created automagically and therefore Terraform is unaware of it. To this end, we need to use the "scripts/get-gcp-negs.sh" script which uses the gcloud CLI tool to get the Network Endpoint Groups which are magically created by GKE. JQ is required for this to parse the response from the gcloud CLI tool. This is then used to created a GCP backend service.
+
 # Resources created in GCP per region
 - Kubernetes cluster with 1 node in 3 zones
 - CloudSQL MySQL instance & user
 - Static IP for the AuthProxy
 - 3 GCS buckets for GEM
-- Static IP for Grafana
+
+# Resources created globally
+- Global Static IP for Grafana
+- Global Load balancer
+- Health Check
+- Backend Service
+- Global forwarding rule
+- URL Map
+- Target HTTP Proxy
 
 # Configuration
 ## Creating the GCP Service Account
@@ -88,14 +104,20 @@ This client will be used as the common client that Grafana and GEM will use for 
 	- Make sure to set the "Client Authentication" to be "client secret sent as basic auth"
 	- Set "Hide on Login Page" to on
 
-## Step 1) Getting a Static IP address for Grafana Instances
+## Step 1) Authenticate GCloud on the CLI
+1. Read the docs at https://cloud.google.com/sdk/gcloud/reference/auth/activate-service-account
+2. Take the below template command and apply your settings to it:
+	`gcloud auth activate-service-account {SERVICE_ACCOUNT@DOMAIN.COM} --key-file={PATH TO YOUR CREATED GCP SERVICE ACCOUNT} --project={THE PROJECT ID}` 
+3. Run it :) 
+
+## Step 2) Getting a Static IP address for the global grafana load balancer
 1. Go into the ge_infra folder
 2. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
 3. `terraform init`
 4. `terraform apply -var-file vars.tfvars`
-5. This will output two ip addresses. Create one GE license with the Grafana Enterprise Metrics Plugin and Grafana Enterprise modules for each ip address and save them. Make sure you point to these licenses and update the IP Addresses with the stack vars.tfvars 
+5. This will output one ip addresses which is for the global load balancer. Create one GE license with the Grafana Enterprise Metrics Plugin and Grafana Enterprise modules. The URL should be "http://{IP}/". Don't add a port. Download the license and make sure you update stack/vars.tfvars "grafana_global_license_file" and "grafana_global_ip_address" variables accordingly
 
-## Step 2) Deploying everything else
+## Step 3) Deploying everything else
 1. Go into the stack folder
 2. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
 3. `terraform init`
@@ -103,18 +125,17 @@ This client will be used as the common client that Grafana and GEM will use for 
 5. ** Note: The Grafana Agent won't ship data until you've configured the Enterprise Metrics Plugin (see below) **
 
 ## Configure Enterprise Metrics Plug in
-You will need to do the following for both gem_a and gem_b. I will use the below steps for gem_a, please repeat accordingly for gem_b replacing grafana_a and gem_a with grafana_b and gem_b respectively.
-1. Get the IP address of grafana_a from running `terraform output` within the stack directory. 
+1. Get the IP address of grafana from running `terraform output` within the stack directory. 
 2. Log in with your configured OAuth user
-4. Set the plugin token to be the output from terraform called "gem_token_override". Also set the "Grafana Enterprise Metrics URL" to be gem_a_endpoint from terraform output
-5. Create a tenant, I will call it "tenant1"
-6. Create an access policy for this tenant. I will call it tenant1-ap. I have also ticked all permissions and selected the tenant1 tenant
-7. Log out and back in with your OAuth user within Grafana to get the updated Access Token which includes this attribute
-8. Create a prometheus data source for this tenant with the name "Prometheus Global". Set the URL to be gem_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "tenant" and the value of the tenant you previously created. In my case "tenant1"
+3. Set the plugin token to be the output from terraform called "gem_token_override". Also set the "Grafana Enterprise Metrics URL" to be gem_a_endpoint from terraform output
+4. Create a tenant, I will call it "tenant1"
+5. Create an access policy for this tenant. I will call it tenant1-ap. I have also ticked all permissions and selected the tenant1 tenant
+6. Log out and back in with your OAuth user within Grafana to get the updated Access Token which includes this attribute
+7. Create a prometheus data source for this tenant with the name "Prometheus Global". Set the URL to be gem_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "tenant" and the value of the tenant you previously created. In my case "tenant1"
+8. Reconfigure the plugin (open the plugin and click on the "Configuration tab") and apply the same steps from step 3 but using gem_b instead of gem_a
 
 ## Creating new Tenants
 - For each tenant you create, you will need to create a new client following the same instructions outlined above for Data Shipper OIDC. Furthermore, for each user using that tenant you need to add the access policy id to the users attributes under Grafana/access_policies. Like how we did for tenant1-ap. Realistically you would do this as a Group as we did for the Grafana/Admin role. 
-
 
 # Testing the DR Capability
 ## Destroying a region
@@ -132,3 +153,7 @@ In the event where there is a major DR event and an entire region goes offline, 
 Another option is to deploy Kafka between your data shippers and GEM to buffer data for as long as required by your Recovery Point Objective (RPO). However that is out of scope of this project.
 
 An alternative option is once both regions are operational again, the object store from the region that stayed live can be duplicated to the object store which went offline. This way it would ensure the historical data is in sync whilst both recieve latest data. This could be a very costly and long exercise and is out of scope of this project.
+
+# Known Issues
+When deploying Grafana to GKE, a GCP Network Endpoint Group (NEG) is created for each zone Grafana is deployed in. This is detailed within the "Terraform K8s Workaround" section above. It seems when deleting that service GKE doesn't delete the automatically created NEG and it lingers. This doesn't seem to have any cost implication or performance implication. It's just untidy.
+

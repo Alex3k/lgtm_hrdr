@@ -1,4 +1,4 @@
-replicas: 1
+replicas: 3
 
 grafana.ini:
   log:
@@ -6,7 +6,7 @@ grafana.ini:
   enterprise:
     license_path: /etc/grafana/license/license.jwt
   server:
-    root_url: http://${ge_ip}:3000/
+    root_url: http://${ge_ip}/
   auth.generic_oauth:
     enabled: true
     scopes: openid email profile
@@ -30,9 +30,10 @@ grafana.ini:
     login_logo: ""
     
 service:
-  type: LoadBalancer
+  type: ClusterIP
   port: 3000
-  loadBalancerIP: ${ge_ip}
+  annotations:
+    cloud.google.com/neg: '{"exposed_ports":{"3000":{}}}'
 
 extraSecretMounts:
   - name: ge-secrets

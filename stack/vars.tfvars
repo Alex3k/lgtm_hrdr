@@ -51,11 +51,8 @@ oidc_auth_url      = "https://lemur-14.cloud-iam.com/auth/realms/gem-oidc/protoc
 
 // --------------------------------------------------------
 // Grafana Enterprise Variables That Need Changing
-grafana_a_ip_address   = "34.136.247.91"                                                   // update_me
-grafana_a_license_file = "/Users/akc/Desktop/Playground/dr/stack/ge_uscentral_license.jwt" // update_me
-
-grafana_b_ip_address   = "34.89.92.217"                                                 // update_me
-grafana_b_license_file = "/Users/akc/Desktop/Playground/dr/stack/ge_europe_license.jwt" // update_me
+grafana_global_ip_address   = "34.110.135.205"                                        // update_me
+grafana_global_license_file = "/Users/akc/Desktop/Playground/dr/stack/ge_license.jwt" // update_me
 
 // --------------------------------------------------------
 // Grafana Agent Safe Default Variables

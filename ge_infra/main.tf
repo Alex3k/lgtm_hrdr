@@ -1,31 +1,12 @@
 terraform {
 }
 
-module "grafana_a" {
-  source = "./modules/infra"
+provider "google" {
+  credentials = file(var.gcp_svc_acc_file_path)
 
-  gcp_project_id=var.gcp_project_id
-
-  gcp_svc_acc_file_path=var.gcp_svc_acc_file_path
-
-  owner_name=var.owner_name
-
-  gcp_region=var.grafana_a_gcp_region
-  identifier = var.grafana_a_identifier
+  project = var.gcp_project_id
 }
 
-module "grafana_b" {
-  source = "./modules/infra"
-
-  gcp_project_id=var.gcp_project_id
-
-  gcp_svc_acc_file_path=var.gcp_svc_acc_file_path
-
-  owner_name=var.owner_name
-
-  gcp_region=var.grafana_b_gcp_region
-  identifier = var.grafana_b_identifier
+resource "google_compute_global_address" "grafana_global_ip" {
+  name   = "${var.owner_name}-ge-hadr-ip"
 }
-
-
-

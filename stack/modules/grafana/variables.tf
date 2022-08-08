@@ -117,4 +117,10 @@ variable "gem_endpoint" {
   sensitive   = false
 }
 
+variable "admin_password" {
+  type        = string
+  description = "The admin password for grafana"
+  nullable    = false
+  sensitive   = true
+}
 

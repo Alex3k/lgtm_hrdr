@@ -20,27 +20,3 @@ variable "owner_name" {
   description = "Your name in lowercase and without spaces for GCP resource identification purposes."
   nullable    = false
 }
-
-variable "grafana_a_gcp_region" {
-  type        = string
-  description = "The region to deploy everything in"
-  nullable    = false
-}
-
-variable "grafana_a_identifier" {
-  type        = string
-  description = "What is the identifier for this deployment"
-  nullable    = false
-}
-
-variable "grafana_b_gcp_region" {
-  type        = string
-  description = "The region to deploy everything in"
-  nullable    = false
-}
-
-variable "grafana_b_identifier" {
-  type        = string
-  description = "What is the identifier for this deployment"
-  nullable    = false
-}

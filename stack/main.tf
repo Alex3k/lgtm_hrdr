@@ -10,6 +10,14 @@ provider "google" {
 
 data "google_client_config" "provider" {}
 
+
+resource "random_password" "grafana_password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+
 // --------------------------------------------------------
 // Region A Configuration
 
@@ -96,9 +104,10 @@ module "grafana_a" {
 
   gke_cluster_name = google_container_cluster.region_a.name
 
-  ge_ip_address = var.grafana_a_ip_address
+  ge_ip_address = var.grafana_global_ip_address
 
-  ge_license_file = var.grafana_a_license_file
+  ge_license_file = var.grafana_global_license_file
+  admin_password  = random_password.grafana_password.result
 
   mysql_database_name = var.grafana_a_mysql_database_name
 
@@ -240,9 +249,10 @@ module "grafana_b" {
 
   gke_cluster_name = google_container_cluster.region_a.name
 
-  ge_ip_address = var.grafana_b_ip_address
+  ge_ip_address = var.grafana_global_ip_address
 
-  ge_license_file = var.grafana_b_license_file
+  ge_license_file = var.grafana_global_license_file
+  admin_password  = random_password.grafana_password.result
 
   mysql_database_name = var.grafana_b_mysql_database_name
 
@@ -296,3 +306,30 @@ module "grafana_agent_b" {
     google_container_cluster.region_b
   ]
 }
+
+
+module "grafana_global_loadbalancer" {
+  source = "./modules/grafana_lb"
+
+  gcp_project_id = var.gcp_project_id
+
+  gcp_svc_acc_file_path = var.gcp_svc_acc_file_path
+
+  grafana_global_ip_address = var.grafana_global_ip_address
+
+  owner_name = var.owner_name
+
+  grafana_a_service_name = module.grafana_a.grafana_service
+  grafana_b_service_name = module.grafana_b.grafana_service
+
+
+  providers = {
+    google     = google
+  }
+
+  depends_on = [
+    module.grafana_a,
+    module.grafana_b
+  ]
+}
+

@@ -70,12 +70,6 @@ resource "google_sql_database" "grafana_db" {
   ]
 }
 
-resource "random_password" "ge_password" {
-  length           = 16
-  special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
-}
-
 resource "kubernetes_secret" "ge_secrets" {
   metadata {
     name = "ge-secrets"
@@ -83,12 +77,26 @@ resource "kubernetes_secret" "ge_secrets" {
   data = {
     "license.jwt"    = file(var.ge_license_file)
     "admin_user"     = "admin"
-    "admin_password" = random_password.ge_password.result
+    "admin_password" = var.admin_password
   }
-  depends_on = [
-    random_password.ge_password
-  ]
 }
+
+resource "kubernetes_config_map" "plugin_config_map" {
+  metadata {
+    name = "grafana-plugin-configmap"
+    labels = {
+      grafana_plugin = ""
+    }
+  }
+
+  data = {
+    "grafana-metrics-enterprise-app.yaml" = templatefile("${path.module}/plugin_configmap.tftpl", {
+      token = var.gem_token
+      url   = var.gem_endpoint
+    })
+  }
+}
+
 
 resource "helm_release" "ge" {
   chart      = "grafana"
@@ -118,21 +126,3 @@ resource "helm_release" "ge" {
     kubernetes_config_map.plugin_config_map
   ]
 }
-
-
-resource "kubernetes_config_map" "plugin_config_map" {
-  metadata {
-    name = "grafana-plugin-configmap"
-    labels = {
-      grafana_plugin = ""
-    }
-  }
-
-  data = {
-    "grafana-metrics-enterprise-app.yaml" = templatefile("${path.module}/plugin_configmap.tftpl", {
-      token = var.gem_token
-      url   = var.gem_endpoint
-    })
-  }
-}
-

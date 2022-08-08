@@ -155,5 +155,5 @@ Another option is to deploy Kafka between your data shippers and GEM to buffer d
 An alternative option is once both regions are operational again, the object store from the region that stayed live can be duplicated to the object store which went offline. This way it would ensure the historical data is in sync whilst both recieve latest data. This could be a very costly and long exercise and is out of scope of this project.
 
 # Known Issues
-When deploying Grafana to GKE, a GCP Network Endpoint Group (NEG) is created for each zone Grafana is deployed in. This is detailed within the "Terraform K8s Workaround" section above. It seems when deleting that service GKE doesn't delete the automatically created NEG and it lingers. This doesn't seem to have any cost implication or performance implication. It's just untidy.
+- When deploying Grafana to GKE, a GCP Network Endpoint Group (NEG) is created for each zone Grafana is deployed in. This is detailed within the "Terraform K8s Workaround" section above. It seems when deleting that service GKE doesn't delete the automatically created NEG and it lingers. This doesn't seem to have any cost implication or performance implication. It's just untidy.
 

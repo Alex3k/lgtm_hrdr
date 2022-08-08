@@ -42,10 +42,6 @@ output "authproxy_b_external_ip" {
 // --------------------------------------------------------
 // Grafana Enterprise Specific Outputs
 
-output "global_grafana_ip" {
-  value = module.grafana_global_loadbalancer.global_grafana_ip
-}
-
 output "grafana_username" {
   value     = "admin"
   sensitive = true

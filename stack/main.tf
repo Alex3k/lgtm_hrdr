@@ -307,29 +307,3 @@ module "grafana_agent_b" {
   ]
 }
 
-
-module "grafana_global_loadbalancer" {
-  source = "./modules/grafana_lb"
-
-  gcp_project_id = var.gcp_project_id
-
-  gcp_svc_acc_file_path = var.gcp_svc_acc_file_path
-
-  grafana_global_ip_address = var.grafana_global_ip_address
-
-  owner_name = var.owner_name
-
-  grafana_a_service_name = module.grafana_a.grafana_service
-  grafana_b_service_name = module.grafana_b.grafana_service
-
-
-  providers = {
-    google     = google
-  }
-
-  depends_on = [
-    module.grafana_a,
-    module.grafana_b
-  ]
-}
-

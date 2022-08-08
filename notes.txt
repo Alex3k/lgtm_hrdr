@@ -4,4 +4,10 @@ https://lemur-14.cloud-iam.com/auth/admin/gem-oidc/console/#/realms/gem-oidc
 GitOps for Grafana notes in README
 Grafana Agent HA
 Alerting HA
+GEL
+	Grafana Plugin
+	Update README
+	README for OIDC GEL
+	auth proxy
+
 

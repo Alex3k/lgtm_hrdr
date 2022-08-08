@@ -38,9 +38,9 @@ To run any of this within GCP, you will need to create a GCP service account whi
 ## Setting up OIDC in Keycloak
 For this project, I am using Keycloak as my OIDC provider. You can spin up a free realm through Cloud IAM (https://www.cloud-iam.com/). Sadly the Terraform provider requires a paid version. A provider for Keycloak was chosen instead of hosting within this project is because this is purely focusing on managing our technologies over third parties.
 
-### GEM Client
-This client will be used as the common client that Grafana and GEM will use for common authentication and authorization.
-1. Create a new client called "gem" by setting the new clients "Client ID" to "gem" and set the protocol to "openid-connect". Ignore the Root URL
+### GEM, GEL & Grafana OIDC
+This client will be used by Grafana, GEM and GEL for authentication and authorization.
+1. Create a new client called "gex_ge" by setting the new clients "Client ID" to "gex_ge" and set the protocol to "openid-connect". Ignore the Root URL
 	- Within the client settings, set the following and ignore the rest:
 		- Access Type: Confidential
 		- Valid Redirect URLS: *
@@ -76,23 +76,22 @@ This client will be used as the common client that Grafana and GEM will use for 
 		- Ensure "add to ID token", "Add to access token",  "Multivalued" "Add to userinfo" are on
 		- Ensure  are on
 		- Click Save
-7. Go back to your client called "gem" and click on the Client Scopes tab
+7. Go back to your client called "gex_ge" and click on the Client Scopes tab
 	- Add "Grafana/access_policies" to the "Assigned Default Client Scopes" box
 	- Click on "Evaluate" under Client scopes, select the user you created - in my case "akc" and click evaluate. Under "Generated User Info" you should see "realm_access.roles" contained "Grafana/Admin" and "Grafana/access_policies" containing "tenant1-ap". If not, revaluate the above, you can't proceed without this.
 8. Finally, we need to add the Identity Provider. Click on Identity Providers and add a new OpenID Connect provider
-	- Set the name to be "gem-oidc"
+	- Set the name to be "gex_ge"
 	- Ensure "Enabled" is set to On
 	- In a new tab, open the Realm Settings option on the left hand side Configure menu and click on the "OpenID Endpoint Configuration" Endpoint. 
 	- Within the configuration from the above step, search for "authorization_endpoint", copy the value and paste it within the OpenID Connect Config Authorization URL within the identity provider. 
 	- Do the same for Token URL (token_endpoint) and User Info URL (userinfo_endpoint)
 	- Set client Authentication to "Client secret at jwt"
-	- Set the Client ID to the ID of your previously created client. Following this guide it would be "gem"
+	- Set the Client ID to the ID of your previously created client. Following this guide it would be "gex_ge"
 	- Set the Client Secret to be the secret from your client. If you have lost it you can find it by going to the client and the credentials tba
-- To configure GEM and Grafana to use this settings, please update the respective vars.tfvars file
-
+- To configure GEM, Grafana and GEL to use this settings, please update the respective vars.tfvars file
 
 ### Data Shipper OIDC
-1. Create a new client called "data_shipper_tenant1" and (only) follow step 1 in the GEM client details above however within Settings make sure "Service Accounts Enabled" is set to on.
+1. Create a new client called "data_shipper_tenant1" and (only) follow step 1 in steps above however within Settings make sure "Service Accounts Enabled" is set to on.
 2. Still within the Client, go to Mappers and create a new one:
 	- Set the Name to be Grafana/access_policies
 	- Set the Mapper Type to Hardcoded Claim
@@ -115,24 +114,34 @@ This client will be used as the common client that Grafana and GEM will use for 
 2. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
 3. `terraform init`
 4. `terraform apply -var-file vars.tfvars`
-5. This will output one ip addresses which is for the global load balancer. Create one GE license with the Grafana Enterprise Metrics Plugin and Grafana Enterprise modules. The URL should be "http://{IP}/". Don't add a port. Download the license and make sure you update stack/vars.tfvars "grafana_global_license_file" and "grafana_global_ip_address" variables accordingly
+5. This will output one ip addresses which is for the global load balancer. Create one GE license with the Grafana Enterprise Metrics Plugin and Grafana Enterprise modules. The URL should be "http://{IP}/". Don't add a port. Download the license 
+6. Make sure you update stack/vars.tfvars "grafana_global_license_file" and "grafana_global_ip_address" variables accordingly. 
+7. Make sure you update ge_lb/vars.tfvars "grafana_global_ip_address"
 
-## Step 3) Deploying everything else
+## Step 3) Deploy GEM/GE/GA
 1. Go into the stack folder
 2. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
 3. `terraform init`
 4. `terraform apply -var-file vars.tfvars`
 5. ** Note: The Grafana Agent won't ship data until you've configured the Enterprise Metrics Plugin (see below) **
 
+## Step 4) Deploy the GE Global Load Balance
+1. To make it easier to destroy regions, I have seperated this out into it's own Terraform project.
+2. Go int the ge_lb folder
+3. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
+4. `terraform init`
+5. `terraform apply -var-file vars.tfvars`
+
 ## Configure Enterprise Metrics Plug in
-1. Get the IP address of grafana from running `terraform output` within the stack directory. 
-2. Log in with your configured OAuth user
-3. Set the plugin token to be the output from terraform called "gem_token_override". Also set the "Grafana Enterprise Metrics URL" to be gem_a_endpoint from terraform output
-4. Create a tenant, I will call it "tenant1"
-5. Create an access policy for this tenant. I will call it tenant1-ap. I have also ticked all permissions and selected the tenant1 tenant
-6. Log out and back in with your OAuth user within Grafana to get the updated Access Token which includes this attribute
-7. Create a prometheus data source for this tenant with the name "Prometheus Global". Set the URL to be gem_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "tenant" and the value of the tenant you previously created. In my case "tenant1"
-8. Reconfigure the plugin (open the plugin and click on the "Configuration tab") and apply the same steps from step 3 but using gem_b instead of gem_a
+1. Get the IP address of grafana from running `terraform output` within the ge_lb directory. 
+2. Get all of details by running `terraform output` within the stack directory
+3. Log in with your configured OAuth user
+4. Set the plugin token to be the output from terraform called "gem_token_override". Also set the "Grafana Enterprise Metrics URL" to be gem_a_endpoint from terraform output
+5. Create a tenant, I will call it "tenant1"
+6. Create an access policy for this tenant. I will call it tenant1-ap. I have also ticked all permissions and selected the tenant1 tenant
+7. Log out and back in with your OAuth user within Grafana to get the updated Access Token which includes this attribute
+8. Create a prometheus data source for this tenant with the name "Prometheus Global". Set the URL to be gem_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "tenant" and the value of the tenant you previously created. In my case "tenant1"
+9. Reconfigure the plugin (open the plugin and click on the "Configuration tab") and apply the same steps from step 3 but using gem_b instead of gem_a
 
 ## Creating new Tenants
 - For each tenant you create, you will need to create a new client following the same instructions outlined above for Data Shipper OIDC. Furthermore, for each user using that tenant you need to add the access policy id to the users attributes under Grafana/access_policies. Like how we did for tenant1-ap. Realistically you would do this as a Group as we did for the Grafana/Admin role. 

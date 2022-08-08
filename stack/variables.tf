@@ -51,6 +51,17 @@ variable "gcp_gke_cluster_name_b" {
   nullable    = false
 }
 
+variable "oidc_issuer_url" {
+  type        = string
+  description = "The issuer url for your oidc connection"
+  nullable    = false
+}
+
+variable "oidc_access_policy_claim" {
+  type        = string
+  description = "The variable in the JWT that contains the access policies"
+  nullable    = false
+}
 
 // --------------------------------------------------------
 // GEM Specific Variables
@@ -65,19 +76,6 @@ variable "authproxy_name_prefix" {
   description = "The prefix for authproxy. This will follow the format {prefix}-authproxy-{region}"
   nullable    = false
 }
-
-variable "oidc_access_policy_claim" {
-  type        = string
-  description = "The variable in the JWT that contains the access policies"
-  nullable    = false
-}
-
-variable "oidc_issuer_url" {
-  type        = string
-  description = "The issuer url for your oidc connection"
-  nullable    = false
-}
-
 
 variable "gem_a_license_file" {
   type        = string

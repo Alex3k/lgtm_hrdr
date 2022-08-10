@@ -91,8 +91,10 @@ resource "kubernetes_config_map" "plugin_config_map" {
 
   data = {
     "grafana-metrics-enterprise-app.yaml" = templatefile("${path.module}/plugin_configmap.tftpl", {
-      token = var.gem_token
-      url   = var.gem_endpoint
+      gem_token = var.gem_token
+      gem_url   = var.gem_endpoint
+      gel_token = var.gel_token
+      gel_url   = var.gel_endpoint
     })
   }
 }

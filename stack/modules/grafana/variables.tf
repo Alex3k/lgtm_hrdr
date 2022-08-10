@@ -117,6 +117,21 @@ variable "gem_endpoint" {
   sensitive   = false
 }
 
+
+variable "gel_token" {
+  type        = string
+  description = "The Access Token to configure and connect to GEL"
+  nullable    = false
+  sensitive   = true
+}
+
+variable "gel_endpoint" {
+  type        = string
+  description = "The endpoint to configure and connect to GEL"
+  nullable    = false
+  sensitive   = false
+}
+
 variable "admin_password" {
   type        = string
   description = "The admin password for grafana"

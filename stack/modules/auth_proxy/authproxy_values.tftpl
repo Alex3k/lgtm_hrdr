@@ -2,8 +2,9 @@ replicaCount: 3
 gem:
   # Ensure you include http/https as a prefix to the gateway
   gateway: ${gem_gateway_url}
-  port: 8080
-  prometheusHttpPrefix: prometheus
+
+gel:
+  gateway: ${gel_gateway_url}
 
 service:
   type: LoadBalancer

@@ -21,8 +21,10 @@ podAnnotations: {}
 gem:
   # Ensure you include http/https as a prefix to the gateway
   gateway: ""
-  port: 8080
-  prometheusHttpPrefix: prometheus
+
+gel:
+  # Ensure you include http/https as a prefix to the gateway
+  gateway: ""
 
 service:
   type: LoadBalancer

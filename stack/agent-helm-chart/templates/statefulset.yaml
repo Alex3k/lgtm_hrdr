@@ -32,6 +32,11 @@ spec:
         - containerPort: {{ .Values.service.port }}
           name: http-metrics
         volumeMounts:
+        - name: logs
+          mountPath: /var/log
+        - mountPath: /var/lib/docker/containers
+          name: varlibdockercontainers
+          readOnly: true
         - mountPath: /var/lib/agent
           name: agent-wal
         - mountPath: /etc/agent
@@ -40,6 +45,12 @@ spec:
           name: client-secret
       serviceAccount: grafana-agent
       volumes:
+      - name: logs
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
       - name: grafana-agent
         configMap:
           name: grafana-agent

@@ -47,15 +47,27 @@ variable "gke_cluster_name" {
   nullable    = false
 }
 
-variable "remote_write_url_a" {
+variable "gem_remote_write_url_a" {
   type        = string
   description = "The URL that should be used for region a"
   nullable    = false
 }
 
-variable "remote_write_url_b" {
+variable "gem_remote_write_url_b" {
   type        = string
   description = "The URL that should be used for region b"
+  nullable    = false
+}
+
+variable "gel_a_endpoint" {
+  type        = string
+  description = "The endpoint to write to GEL in region A"
+  nullable    = false
+}
+
+variable "gel_b_endpoint" {
+  type        = string
+  description = "The endpoint to write to GEL in region B"
   nullable    = false
 }
 

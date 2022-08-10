@@ -14,22 +14,28 @@ data:
           return 200;
         }
 
+        # -------------------------------------------------
+        # GEM
+        # -------------------------------------------------
+
+        # Used by Grafana Agent
         location /prometheus {
           set $prom_auth_bearer $http_authorization;
 
           proxy_hide_header authorization;
 
           if ($prom_auth_bearer ~ "^Bearer (.+)$" ) { 
-            set $prom_auth_bearer "Bearer $http_tenant:$1";
+            set $prom_auth_bearer "Bearer $http_x_scope_orgid:$1";
           }
           proxy_set_header authorization $prom_auth_bearer;
 
           proxy_set_header tenant "";
 
-          proxy_pass {{ .Values.gem.gateway}}:{{ .Values.gem.port }}/api/v1/push;
+          proxy_pass {{ .Values.gem.gateway}}/api/v1/push;
         }
 
-         location ~ /gem/{{ .Values.gem.prometheusHttpPrefix }}/(.*)$ {
+        # Used by Grafana when adding a data source
+        location ~ /gem/prometheus/(.*)$ {
           set $promPath $1;
           
           set $bearer "Bearer "; 
@@ -37,16 +43,58 @@ data:
           proxy_set_header x_id_token "";
           proxy_set_header tenant "";
           
-          proxy_set_header authorization "Bearer $http_tenant:$http_x_id_token";
+          proxy_set_header authorization "Bearer $http_x_scope_orgid:$http_x_id_token";
 
-          proxy_pass {{ .Values.gem.gateway}}:{{ .Values.gem.port }}/{{ .Values.gem.prometheusHttpPrefix}}/$promPath;
+          proxy_pass {{ .Values.gem.gateway}}/prometheus/$promPath;
         }
 
+        # Used by Grafana when configuring the plugin
         location ~ /gem/(.*)$ {
           set $gemPath $1;
-          proxy_pass {{ .Values.gem.gateway}}:{{ .Values.gem.port }}/$gemPath;
+          proxy_pass {{ .Values.gem.gateway}}/$gemPath;
         }
 
+        # -------------------------------------------------
+        # GEL
+        # -------------------------------------------------
+        # Used by Grafana Agent
+        location /loki/api/v1/push {
+          set $auth_bearer $http_authorization;
+
+          proxy_hide_header authorization;
+
+          if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+            set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+          }
+          proxy_set_header authorization $auth_bearer;
+
+          proxy_set_header tenant "";
+
+          proxy_pass {{ .Values.gel.gateway}}/loki/api/v1/push;
+        }
+
+        # Used by Grafana when adding a data source
+        location ~ /gel/loki/(.*)$ {
+          set $gelPath $1;
+          set $auth_bearer $http_authorization;
+
+          proxy_hide_header authorization;
+
+          if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+            set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+          }
+          proxy_set_header authorization $auth_bearer;
+
+          proxy_set_header tenant "";
+
+          proxy_pass {{ .Values.gel.gateway}}/$gelPath;
+        }
+
+        # Used by Grafana when configuring the plugin
+        location ~ /gel/(.*)$ {
+          set $gelPath $1;
+          proxy_pass {{ .Values.gel.gateway}}/$gelPath;
+        }
       }
     }
     

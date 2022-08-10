@@ -1,10 +1,11 @@
 # Introduction
-This project uses GCP to deploy a K8s cluster and deploy GEM and Grafana within it and all the require components for that to work across two regions. With this, you can see GEM and GE working in a fully HA and DR resistant environment. This can be verified by deploying everything and then destroying a region and noticing that everything still works.
+This project uses GCP to deploy a K8s cluster and deploy GEM, GEL, and Grafana within it and all the require components for that to work across two regions. With this, you can see GEM, GEL and GE working in a fully HA and DR resistant environment. This can be verified by deploying everything and then destroying a region and noticing that everything still works.
 
 ** You can only use this project if you work at Grafana Labs and have the ability to create licenses or you are working with Grafana Labs and can request a license **
 
 For each region this project will deploy spread 
 - Grafana Enterprise Metrics (GEM) deployed across three zones
+- Grafana Enterprise Logs (GEL) deployed across three zones
 - Grafana Enterprise (GE) deployed across three zones
 - Grafana Agent pushing metrics from the kubernetes cluster to both regions GEM (Dual write)
 
@@ -13,7 +14,7 @@ For each region this project will deploy spread
 - GCP GCloud - https://cloud.google.com/sdk/docs/install
 - JQ - https://stedolan.github.io/jq/download/
 
-# Terraform K8s Workaround
+# Grafana Enterprise Global Load Balancer Terraform K8s Workaround
 Within the Grafana Helm Chart, we add an annotation to the service ` cloud.google.com/neg: '{"exposed_ports":{"3000":{}}}'` this created Network Endpoint Groups in GCP. This is required to have a Global Load Balancer. The challenge is that this is created automagically and therefore Terraform is unaware of it. To this end, we need to use the "scripts/get-gcp-negs.sh" script which uses the gcloud CLI tool to get the Network Endpoint Groups which are magically created by GKE. JQ is required for this to parse the response from the gcloud CLI tool. This is then used to created a GCP backend service.
 
 # Resources created in GCP per region
@@ -21,6 +22,7 @@ Within the Grafana Helm Chart, we add an annotation to the service ` cloud.googl
 - CloudSQL MySQL instance & user
 - Static IP for the AuthProxy
 - 3 GCS buckets for GEM
+- 1 GCS buckets for GEL
 
 # Resources created globally
 - Global Static IP for Grafana
@@ -118,7 +120,7 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 6. Make sure you update stack/vars.tfvars "grafana_global_license_file" and "grafana_global_ip_address" variables accordingly. 
 7. Make sure you update ge_lb/vars.tfvars "grafana_global_ip_address"
 
-## Step 3) Deploy GEM/GE/GA
+## Step 3) Deploy GEM/GEL/GE/GA
 1. Go into the stack folder
 2. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
 3. `terraform init`
@@ -139,9 +141,18 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 4. Set the plugin token to be the output from terraform called "gem_token_override". Also set the "Grafana Enterprise Metrics URL" to be gem_a_endpoint from terraform output
 5. Create a tenant, I will call it "tenant1"
 6. Create an access policy for this tenant. I will call it tenant1-ap. I have also ticked all permissions and selected the tenant1 tenant
-7. Log out and back in with your OAuth user within Grafana to get the updated Access Token which includes this attribute
-8. Create a prometheus data source for this tenant with the name "Prometheus Global". Set the URL to be gem_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "tenant" and the value of the tenant you previously created. In my case "tenant1"
-9. Reconfigure the plugin (open the plugin and click on the "Configuration tab") and apply the same steps from step 3 but using gem_b instead of gem_a
+7. Create a prometheus data source for this tenant with the name "Prometheus Global". Set the URL to be gem_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "x-scope-orgid" and the value of the tenant you previously created. In my case "tenant1"
+8. Reconfigure the plugin (open the plugin and click on the "Configuration tab") and apply the same steps from step 3 but using gem_b instead of gem_a
+
+## Configure Enterprise Logs Plug in
+1. Get the IP address of grafana from running `terraform output` within the ge_lb directory. 
+2. Get all of details by running `terraform output` within the stack directory
+3. Log in with your configured OAuth user
+4. Set the plugin token to be the output from terraform called "gel_token_override". Also set the "Grafana Enterprise Logs URL" to be gel_a_endpoint from terraform output
+5. Create a tenant, I will call it "tenant1"
+6. Create an access policy for this tenant. I will call it tenant1-ap. I have also ticked all permissions and selected the tenant1 tenant
+7. Create a Loki data source for this tenant with the name "Loki Global". Set the URL to be gel_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "x-scope-orgid" and the value of the tenant you previously created. In my case "tenant1"
+8. Reconfigure the plugin (open the plugin and click on the "Configuration tab") and apply the same steps from step 3 but using gel_b instead of gem_l
 
 ## Creating new Tenants
 - For each tenant you create, you will need to create a new client following the same instructions outlined above for Data Shipper OIDC. Furthermore, for each user using that tenant you need to add the access policy id to the users attributes under Grafana/access_policies. Like how we did for tenant1-ap. Realistically you would do this as a Group as we did for the Grafana/Admin role. 
@@ -157,9 +168,9 @@ Go into the stack directory and use the below:
 See chat with Aengus in chat
 
 # Reconsiling data after a failure
-In the event where there is a major DR event and an entire region goes offline, you would need to perform data reconsilation when the region comes back on line to ensure that both region a and region b are back in sync. This could also happen if the network is unavailable within a region from the data shippers or a regions GEM cluster goes offline. The agent (if using Grafana Agent/Promtail/etc) should buffer the data for a period of time (depending on settings). So if it's a short outage the agent will ship the buffered data once back online. However this is a finate period of time.
+In the event where there is a major DR event and an entire region goes offline, you would need to perform data reconsilation when the region comes back on line to ensure that both region a and region b are back in sync. This could also happen if the network is unavailable within a region from the data shippers or a regions GEM/GEL cluster goes offline. The agent (if using Grafana Agent/Promtail/etc) should buffer the data for a period of time (depending on settings). So if it's a short outage the agent will ship the buffered data once back online. However this is a finate period of time.
 
-Another option is to deploy Kafka between your data shippers and GEM to buffer data for as long as required by your Recovery Point Objective (RPO). However that is out of scope of this project.
+Another option is to deploy Kafka between your data shippers and GEM/GEL to buffer data for as long as required by your Recovery Point Objective (RPO). However that is out of scope of this project.
 
 An alternative option is once both regions are operational again, the object store from the region that stayed live can be duplicated to the object store which went offline. This way it would ensure the historical data is in sync whilst both recieve latest data. This could be a very costly and long exercise and is out of scope of this project.
 

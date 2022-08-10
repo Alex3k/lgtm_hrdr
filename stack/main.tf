@@ -63,12 +63,11 @@ provider "helm" {
 module "gem_a" {
   source = "./modules/gem"
 
-  gcp_project_id        = var.gcp_project_id
   gcp_svc_acc_file_path = var.gcp_svc_acc_file_path
   gcp_region            = var.gcp_region_a
   gke_cluster_name      = google_container_cluster.region_a.name
 
-  gcp_gcs_bucket_prefix    = var.gcp_gcs_bucket_prefix_a
+  gcp_gcs_bucket_prefix    = "${var.owner_name}-hadr-gem-${var.gcp_region_a}"
   owner_name               = var.owner_name
   gem_cluster_name         = var.gem_a_cluster_name
   gem_license_file         = var.gem_a_license_file
@@ -76,7 +75,32 @@ module "gem_a" {
   oidc_issuer_url          = var.oidc_issuer_url
   oidc_access_policy_claim = var.oidc_access_policy_claim
 
-  authproxy_name_prefix = var.authproxy_name_prefix
+  depends_on = [
+    google_container_cluster.region_a
+  ]
+
+  providers = {
+    google     = google,
+    kubernetes = kubernetes.region_a,
+    helm       = helm.region_a
+  }
+}
+
+
+module "gel_a" {
+  source = "./modules/gel"
+
+  gcp_svc_acc_file_path = var.gcp_svc_acc_file_path
+  gcp_region            = var.gcp_region_a
+  gke_cluster_name      = google_container_cluster.region_a.name
+  gcp_gcs_bucket_name   = "${var.owner_name}-hadr-gel-storage-${var.gcp_region_a}"
+
+  owner_name               = var.owner_name
+  gel_cluster_name         = var.gel_a_cluster_name
+  gel_license_file         = var.gel_a_license_file
+  gel_admin_token_override = var.gel_admin_token_override
+  oidc_issuer_url          = var.oidc_issuer_url
+  oidc_access_policy_claim = var.oidc_access_policy_claim
 
   depends_on = [
     google_container_cluster.region_a
@@ -119,7 +143,10 @@ module "grafana_a" {
   grafana_role_attribute_path = var.grafana_role_attribute_path
 
   gem_token    = var.gem_admin_token_override
-  gem_endpoint = module.gem_a.gem_endpoint
+  gem_endpoint = module.authproxy_a.gem_endpoint
+
+  gel_token    = var.gel_admin_token_override
+  gel_endpoint = module.authproxy_a.gel_endpoint
 
   providers = {
     google     = google,
@@ -141,13 +168,18 @@ module "grafana_agent_a" {
 
   gcp_region = var.gcp_region_a
 
-  gke_cluster_name   = google_container_cluster.region_a.name
-  remote_write_url_a = "${module.gem_a.authproxy_external_ip}/prometheus"
-  remote_write_url_b = "${module.gem_b.authproxy_external_ip}/prometheus"
+  gke_cluster_name = google_container_cluster.region_a.name
+
   tenant_name        = var.data_shipper_tenant_name
   oidc_client_id     = var.data_shipper_oidc_client_id
   oidc_client_secret = var.data_shipper_oidc_client_secret
   oidc_token_url     = var.data_shipper_oidc_token_url
+
+  gem_remote_write_url_a = "${module.authproxy_a.external_ip}/prometheus"
+  gem_remote_write_url_b = "${module.authproxy_b.external_ip}/prometheus"
+
+  gel_a_endpoint = "${module.authproxy_a.external_ip}/loki/api/v1/push"
+  gel_b_endpoint = "${module.authproxy_b.external_ip}/loki/api/v1/push"
 
   providers = {
     google     = google,
@@ -158,6 +190,24 @@ module "grafana_agent_a" {
   depends_on = [
     google_container_cluster.region_a
   ]
+}
+
+module "authproxy_a" {
+  source = "./modules/auth_proxy"
+
+  gcp_region = var.gcp_region_a
+
+  owner_name          = var.owner_name
+  gem_cluster_gateway = "http://${var.gem_a_cluster_name}-mimir-gateway:8080"
+  gel_cluster_gateway = module.gel_a.gateway_ip
+
+  authproxy_name_prefix = var.authproxy_name_prefix
+
+  providers = {
+    google     = google,
+    kubernetes = kubernetes.region_a,
+    helm       = helm.region_a
+  }
 }
 
 
@@ -207,20 +257,17 @@ provider "helm" {
 module "gem_b" {
   source = "./modules/gem"
 
-  gcp_project_id        = var.gcp_project_id
   gcp_svc_acc_file_path = var.gcp_svc_acc_file_path
   gcp_region            = var.gcp_region_b
   gke_cluster_name      = google_container_cluster.region_a.name
 
-  gcp_gcs_bucket_prefix    = var.gcp_gcs_bucket_prefix_b
+  gcp_gcs_bucket_prefix    = "${var.owner_name}-hadr-gem-${var.gcp_region_b}"
   owner_name               = var.owner_name
   gem_cluster_name         = var.gem_b_cluster_name
   gem_license_file         = var.gem_b_license_file
   gem_admin_token_override = var.gem_admin_token_override
   oidc_issuer_url          = var.oidc_issuer_url
   oidc_access_policy_claim = var.oidc_access_policy_claim
-
-  authproxy_name_prefix = var.authproxy_name_prefix
 
   depends_on = [
     google_container_cluster.region_b
@@ -233,6 +280,31 @@ module "gem_b" {
   }
 }
 
+module "gel_b" {
+  source = "./modules/gel"
+
+  gcp_svc_acc_file_path = var.gcp_svc_acc_file_path
+  gcp_region            = var.gcp_region_b
+  gke_cluster_name      = google_container_cluster.region_b.name
+  gcp_gcs_bucket_name   = "${var.owner_name}-hadr-gel-storage-${var.gcp_region_b}"
+
+  owner_name               = var.owner_name
+  gel_cluster_name         = var.gel_b_cluster_name
+  gel_license_file         = var.gel_b_license_file
+  gel_admin_token_override = var.gel_admin_token_override
+  oidc_issuer_url          = var.oidc_issuer_url
+  oidc_access_policy_claim = var.oidc_access_policy_claim
+
+  depends_on = [
+    google_container_cluster.region_b
+  ]
+
+  providers = {
+    google     = google,
+    kubernetes = kubernetes.region_b,
+    helm       = helm.region_b
+  }
+}
 
 module "grafana_b" {
   source = "./modules/grafana"
@@ -264,7 +336,10 @@ module "grafana_b" {
   grafana_role_attribute_path = var.grafana_role_attribute_path
 
   gem_token    = var.gem_admin_token_override
-  gem_endpoint = module.gem_b.gem_endpoint
+  gem_endpoint = module.authproxy_b.gem_endpoint
+
+  gel_token    = var.gel_admin_token_override
+  gel_endpoint = module.authproxy_b.gel_endpoint
 
   providers = {
     google     = google,
@@ -293,8 +368,11 @@ module "grafana_agent_b" {
   oidc_client_secret = var.data_shipper_oidc_client_secret
   oidc_token_url     = var.data_shipper_oidc_token_url
 
-  remote_write_url_a = "${module.gem_a.authproxy_external_ip}/prometheus"
-  remote_write_url_b = "${module.gem_b.authproxy_external_ip}/prometheus"
+  gem_remote_write_url_a = "${module.authproxy_a.external_ip}/prometheus"
+  gem_remote_write_url_b = "${module.authproxy_b.external_ip}/prometheus"
+
+  gel_a_endpoint = "${module.authproxy_a.external_ip}/loki/api/v1/push"
+  gel_b_endpoint = "${module.authproxy_b.external_ip}/loki/api/v1/push"
 
   providers = {
     google     = google,
@@ -305,5 +383,23 @@ module "grafana_agent_b" {
   depends_on = [
     google_container_cluster.region_b
   ]
+}
+
+module "authproxy_b" {
+  source = "./modules/auth_proxy"
+
+  gcp_region = var.gcp_region_b
+
+  owner_name          = var.owner_name
+  gem_cluster_gateway = "http://${var.gem_b_cluster_name}-mimir-gateway:8080"
+  gel_cluster_gateway = module.gel_b.gateway_ip
+
+  authproxy_name_prefix = var.authproxy_name_prefix
+
+  providers = {
+    google     = google,
+    kubernetes = kubernetes.region_b,
+    helm       = helm.region_b
+  }
 }
 

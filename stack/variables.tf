@@ -94,14 +94,6 @@ variable "gem_a_cluster_name" {
   nullable    = false
 }
 
-
-variable "gcp_gcs_bucket_prefix_a" {
-  type        = string
-  description = "This process creates three buckets with the postfix's tsdb, ruler and admit for the GEM A deployment. What should the prefix to these buckets be?"
-  nullable    = false
-}
-
-
 variable "gem_b_license_file" {
   type        = string
   description = "The file path to the GEM license file for zone B"
@@ -117,20 +109,6 @@ variable "gem_b_cluster_name" {
   type        = string
   description = "The name of the GEM B deployment that will be created as part of this process."
   nullable    = false
-}
-
-variable "gcp_gcs_bucket_prefix_b" {
-  type        = string
-  description = "This process creates three buckets with the postfix's tsdb, ruler and admit for the GEM B deployment. What should the prefix to these buckets be?"
-  nullable    = false
-}
-
-
-variable "grafana_role_attribute_path" {
-  type        = string
-  description = "The role attribute path that maps the OIDC user roles to Grafana roles."
-  nullable    = false
-  sensitive   = false
 }
 
 variable "oidc_client_id" {
@@ -162,6 +140,48 @@ variable "oidc_token_url" {
 variable "oidc_userinfo_url" {
   type        = string
   description = "The User Info URL (also known as API URL) for the OIDC client"
+  nullable    = false
+}
+
+// --------------------------------------------------------
+// Grafana Enterprise Logs Variables
+variable "gel_admin_token_override" {
+  type        = string
+  description = "The override for the GEL tokengen to ensure we can use oidc"
+  nullable    = false
+}
+
+variable "gel_a_license_file" {
+  type        = string
+  description = "The file path to the GEL license file for zone A"
+  nullable    = false
+
+  validation {
+    condition     = fileexists(var.gel_a_license_file)
+    error_message = "The file must exist"
+  }
+}
+
+variable "gel_a_cluster_name" {
+  type        = string
+  description = "The name of the GEL A deployment that will be created as part of this process."
+  nullable    = false
+}
+
+variable "gel_b_license_file" {
+  type        = string
+  description = "The file path to the GEL license file for zone B"
+  nullable    = false
+
+  validation {
+    condition     = fileexists(var.gel_b_license_file)
+    error_message = "The file must exist"
+  }
+}
+
+variable "gel_b_cluster_name" {
+  type        = string
+  description = "The name of the GEL B deployment that will be created as part of this process."
   nullable    = false
 }
 
@@ -224,6 +244,13 @@ variable "grafana_b_mysql_database_name" {
   type        = string
   description = "The name of the mysql database that will be created. Must be unique."
   nullable    = false
+}
+
+variable "grafana_role_attribute_path" {
+  type        = string
+  description = "The role attribute path that maps the OIDC user roles to Grafana roles."
+  nullable    = false
+  sensitive   = false
 }
 
 

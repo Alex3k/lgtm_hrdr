@@ -1,0 +1,145 @@
+enterprise: 
+  enabled: true
+  adminApi:
+    enabled: true
+  useExternalLicense: true
+  externalLicenseName: gel-secrets
+  tokengen:
+    enabled: false
+  config: |
+    admin_client:
+      storage:
+        gcs:
+          bucket_name: ${bucket_name}
+    auth:
+      type: enterprise
+      override:
+        token: ${gel_tokengen_override}
+      admin:
+        oidc:
+          issuer_url: ${oidc_issuer_url}
+          access_policy_claim: "${oidc_access_policy_claim}"
+          access_policy_regex: "(.*)"
+    auth_enabled: true
+    cluster_name: ${gel_cluster_name}
+    license:
+      path: /etc/gel_secrets/license.jwt
+
+loki:
+  authEnabled: true
+
+  commonConfig:
+    path_prefix: /var/loki
+    replication_factor: 3
+
+  storage:
+    type: gcs
+    bucketNames:
+      chunks: ${bucket_name}
+      ruler: ${bucket_name}
+      admin: ${bucket_name}
+
+minio:
+  enabled: false
+
+write:
+  replicas: 3
+  extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: "/etc/gel_secrets/gcp_service_account.json"
+  extraVolumeMounts:
+    - name: gel-secrets
+      mountPath: "/etc/gel_secrets"
+  extraVolumes:
+    - name: gel-secrets
+      secret:
+        secretName: gel-secrets
+        items:
+        - key: gel_license.jwt
+          path: license.jwt
+        - key: gcp_service_account.json
+          path: gcp_service_account.json
+  affinity: |
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - gel_write
+          topologyKey: topology.kubernetes.io/zone
+
+read:
+  replicas: 3
+  extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: "/etc/gel_secrets/gcp_service_account.json"
+  extraVolumeMounts:
+    - name: gel-secrets
+      mountPath: "/etc/gel_secrets"
+  extraVolumes:
+    - name: gel-secrets
+      secret:
+        secretName: gel-secrets
+        items:
+        - key: gel_license.jwt
+          path: license.jwt
+        - key: gcp_service_account.json
+          path: gcp_service_account.json
+  affinity: |
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - gel_read
+          topologyKey: topology.kubernetes.io/zone
+
+gateway:
+  replicas: 3
+  extraEnv:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      value: "/etc/gel_secrets/gcp_service_account.json"
+  extraVolumeMounts:
+    - name: gel-secrets
+      mountPath: "/etc/gel_secrets"
+  extraVolumes:
+    - name: gel-secrets
+      secret:
+        secretName: gel-secrets
+        items:
+        - key: gel_license.jwt
+          path: license.jwt
+        - key: gcp_service_account.json
+          path: gcp_service_account.json
+  affinity: |
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - gel_gateway
+          topologyKey: topology.kubernetes.io/zone
+  service:
+    type: LoadBalancer
+    loadBalancerIP: ${loadbalancer_ip}
+    port: 8080
+
+monitoring:
+  selfMonitoring:
+    enabled: false
+    grafanaAgent:
+      installOperator: false
+  serviceMonitor:
+    enabled: false

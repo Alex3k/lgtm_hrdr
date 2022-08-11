@@ -1,4 +1,0 @@
-https://lemur-14.cloud-iam.com/auth/admin/hadr_oidc/console/
-
-GitOps for Grafana notes in README
-

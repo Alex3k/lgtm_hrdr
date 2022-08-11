@@ -133,15 +133,16 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 3. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
 4. `terraform init`
 5. `terraform apply -var-file vars.tfvars`
+6. It will take a minute or two before the global IP routes to Grafana
 
 ## Configure Enterprise Metrics Plug in
 1. Get the IP address of grafana from running `terraform output` within the ge_lb directory. 
 2. Get all of details by running `terraform output` within the stack directory
 3. Log in with your configured OAuth user
-4. Set the plugin token to be the output from terraform called "gem_token_override". Also set the "Grafana Enterprise Metrics URL" to be gem_a_endpoint from terraform output
+4. Set the plugin token to be the output from terraform called "gem_token_override". Also set the "Grafana Enterprise Metrics URL" to be gem_a_admin_endpoint from terraform output
 5. Create a tenant, I will call it "tenant1"
 6. Create an access policy for this tenant. I will call it tenant1-ap. I have also ticked all permissions and selected the tenant1 tenant
-7. Create a prometheus data source for this tenant with the name "Prometheus Global". Set the URL to be gem_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "x-scope-orgid" and the value of the tenant you previously created. In my case "tenant1"
+7. Create a prometheus data source for this tenant with the name "Prometheus". Set the URL to be gem_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "x-scope-orgid" and the value of the tenant you previously created. In my case "tenant1"
 8. Reconfigure the plugin (open the plugin and click on the "Configuration tab") and apply the same steps from step 3 but using gem_b instead of gem_a
 
 ## Configure Enterprise Logs Plug in
@@ -151,14 +152,19 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 4. Set the plugin token to be the output from terraform called "gel_token_override". Also set the "Grafana Enterprise Logs URL" to be gel_a_endpoint from terraform output
 5. Create a tenant, I will call it "tenant1"
 6. Create an access policy for this tenant. I will call it tenant1-ap. I have also ticked all permissions and selected the tenant1 tenant
-7. Create a Loki data source for this tenant with the name "Loki Global". Set the URL to be gel_a_datasource_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "x-scope-orgid" and the value of the tenant you previously created. In my case "tenant1"
-8. Reconfigure the plugin (open the plugin and click on the "Configuration tab") and apply the same steps from step 3 but using gel_b instead of gem_l
+7. Create a Loki data source for this tenant with the name "Loki". Set the URL to be gel_a_endpoint from terraform,  enable "Forward OAuth Identity" and add a custom header with the name of "x-scope-orgid" and the value of the tenant you previously created. In my case "tenant1"
+8. Reconfigure the plugin (open the plugin and click on the "Configuration tab") and apply the same steps from step 3 but using gel_b instead of gel_a
 
 ## Creating new Tenants
 - For each tenant you create, you will need to create a new client following the same instructions outlined above for Data Shipper OIDC. Furthermore, for each user using that tenant you need to add the access policy id to the users attributes under Grafana/access_policies. Like how we did for tenant1-ap. Realistically you would do this as a Group as we did for the Grafana/Admin role. 
 
 # Testing the DR Capability
 ## Destroying a region
+
+You can tell the region you are in by going to the Grafana Login screen. I have configured it to show the current region. To test the DR capability, I recommend killing off that region. Once you have done this it will take a minute or two for the LB to switch over.
+
+Due to Grafana not configuring the plugins correctly (likely an error on my side when configuring the side car) you will most likely need to configure the plugins again. You won't need to create the tenants/access tokens again though.
+
 Go into the stack directory and use the below:
 1. Destroy Region A - `terraform destroy -target google_container_cluster.region_a -var-file vars.tfvars`
 2. Destroy Region B - `terraform destroy -target google_container_cluster.region_b -var-file vars.tfvars`

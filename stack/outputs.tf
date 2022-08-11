@@ -19,7 +19,7 @@ output "gel_token_override" {
 }
 
 output "gem_a_admin_endpoint" {
-  value = module.gem_a.gateway_ip
+  value = module.gem_a.admin_endpoint
 }
 
 output "gem_a_datasource_endpoint" {

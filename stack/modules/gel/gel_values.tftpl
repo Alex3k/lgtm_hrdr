@@ -25,6 +25,161 @@ enterprise:
     license:
       path: /etc/gel_secrets/license.jwt
 
+  nginxConfig:
+    file: |
+      worker_processes  5;  ## Default: 1
+      error_log  /dev/stderr;
+      pid        /tmp/nginx.pid;
+      worker_rlimit_nofile 8192;
+      events {
+        worker_connections  4096;  ## Default: 1024
+      }
+      http {
+        client_body_temp_path /tmp/client_temp;
+        proxy_temp_path       /tmp/proxy_temp_path;
+        fastcgi_temp_path     /tmp/fastcgi_temp;
+        uwsgi_temp_path       /tmp/uwsgi_temp;
+        scgi_temp_path        /tmp/scgi_temp;
+        proxy_http_version    1.1;
+        default_type application/octet-stream;
+        log_format   main '$remote_addr - $remote_user [$time_local]  $status '
+              '"$request" $body_bytes_sent "$http_referer" '
+              '"$http_user_agent" "$http_x_forwarded_for"';
+        access_log   /dev/stderr  main;
+        sendfile     on;
+        tcp_nopush   on;
+        resolver kube-dns.kube-system.svc.cluster.local;
+        server {
+          listen             8080;
+          location = / {
+            return 200 'OK';
+            auth_basic off;
+          }
+          location = /api/prom/push {
+            set $auth_bearer $http_authorization;
+
+            proxy_hide_header authorization;
+
+            if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+              set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+            }
+            proxy_set_header authorization $auth_bearer;
+
+            proxy_pass       http://enterprise-logs-write.default.svc.cluster.local:3100$request_uri;
+          }
+          location = /api/prom/tail {
+            set $auth_bearer $http_authorization;
+
+            proxy_hide_header authorization;
+
+            if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+              set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+            }
+            proxy_set_header authorization $auth_bearer;
+
+            proxy_pass       http://enterprise-logs-read.default.svc.cluster.local:3100$request_uri;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+          location ~ /api/prom/.* {
+            set $auth_bearer $http_authorization;
+
+            proxy_hide_header authorization;
+
+            if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+              set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+            }
+            proxy_set_header authorization $auth_bearer;
+
+            proxy_pass       http://enterprise-logs-read.default.svc.cluster.local:3100$request_uri;
+          }
+          location ~ /prometheus/api/v1/alerts.* {
+            set $auth_bearer $http_authorization;
+
+            proxy_hide_header authorization;
+
+            if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+              set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+            }
+            proxy_set_header authorization $auth_bearer;
+
+            proxy_pass       http://enterprise-logs-read.default.svc.cluster.local:3100$request_uri;
+          }
+          location ~ /prometheus/api/v1/rules.* {
+            set $auth_bearer $http_authorization;
+
+            proxy_hide_header authorization;
+
+            if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+              set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+            }
+            proxy_set_header authorization $auth_bearer;
+
+            proxy_pass       http://enterprise-logs-read.default.svc.cluster.local:3100$request_uri;
+          }
+          location = /loki/api/v1/push {
+            set $auth_bearer $http_authorization;
+
+            proxy_hide_header authorization;
+
+            if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+              set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+            }
+            proxy_set_header authorization $auth_bearer;
+
+            proxy_pass       http://enterprise-logs-write.default.svc.cluster.local:3100$request_uri;
+          }
+          location = /loki/api/v1/tail {
+            set $auth_bearer $http_authorization;
+
+            proxy_hide_header authorization;
+
+            if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+              set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+            }
+            proxy_set_header authorization $auth_bearer;
+
+            proxy_pass       http://enterprise-logs-read.default.svc.cluster.local:3100$request_uri;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+          }
+          location ~ /loki/api/.* {
+            set $auth_bearer $http_authorization;
+
+            proxy_hide_header authorization;
+
+            if ($auth_bearer ~ "^Bearer (.+)$" ) { 
+              set $auth_bearer "Bearer $http_x_scope_orgid:$1";
+            }
+            proxy_set_header authorization $auth_bearer;
+
+            proxy_pass       http://enterprise-logs-read.default.svc.cluster.local:3100$request_uri;
+          }
+          location ~ /admin/api/.* {
+            proxy_pass       http://enterprise-logs-write.default.svc.cluster.local:3100$request_uri;
+          }
+          location ~ /compactor/.* {
+            proxy_pass       http://enterprise-logs-read.default.svc.cluster.local:3100$request_uri;
+          }
+          location ~ /distributor/.* {
+            proxy_pass       http://enterprise-logs-write.default.svc.cluster.local:3100$request_uri;
+          }
+          location ~ /ring {
+            proxy_pass       http://enterprise-logs-write.default.svc.cluster.local:3100$request_uri;
+          }
+          location ~ /ingester/.* {
+            proxy_pass       http://enterprise-logs-write.default.svc.cluster.local:3100$request_uri;
+          }
+          location ~ /ruler/.* {
+            proxy_pass       http://enterprise-logs-read.default.svc.cluster.local:3100$request_uri;
+          }
+          location ~ /scheduler/.* {
+            proxy_pass       http://enterprise-logs-read.default.svc.cluster.local:3100$request_uri;
+          }
+        }
+      }
+
+
 loki:
   authEnabled: true
 
@@ -134,7 +289,6 @@ gateway:
   service:
     type: LoadBalancer
     loadBalancerIP: ${loadbalancer_ip}
-    port: 8080
 
 monitoring:
   selfMonitoring:

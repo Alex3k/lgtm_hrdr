@@ -18,44 +18,36 @@ output "gel_token_override" {
   value = var.gel_admin_token_override
 }
 
-output "gem_a_endpoint" {
-  value = module.authproxy_a.gem_endpoint
+output "gem_a_admin_endpoint" {
+  value = module.gem_a.gateway_ip
 }
 
 output "gem_a_datasource_endpoint" {
-  value = module.authproxy_a.gem_datasource_endpoint
+  value = module.gem_a.datasource_endpoint
 }
 
 output "gel_a_endpoint" {
-  value = module.authproxy_a.gel_endpoint
+  value = module.gel_a.gateway_ip
 }
 
-output "gel_a_datasource_endpoint" {
-  value = module.authproxy_a.gel_datasource_endpoint
+output "gem_a_external_ip" {
+  value = module.gem_a.gateway_ip
 }
 
-output "authproxy_a_external_ip" {
-  value = module.authproxy_a.external_ip
-}
-
-output "gem_b_endpoint" {
-  value = module.authproxy_b.gem_endpoint
+output "gem_b_admin_endpoint" {
+  value = module.gem_b.admin_endpoint
 }
 
 output "gem_b_datasource_endpoint" {
-  value = module.authproxy_b.gem_datasource_endpoint
+  value = module.gem_b.datasource_endpoint
 }
 
 output "gel_b_endpoint" {
-  value = module.authproxy_b.gel_endpoint
+  value = module.gel_b.gateway_ip
 }
 
-output "gel_b_datasource_endpoint" {
-  value = module.authproxy_b.gel_datasource_endpoint
-}
-
-output "authproxy_b_external_ip" {
-  value = module.authproxy_b.external_ip
+output "gem_b_external_ip" {
+  value = module.gem_b.gateway_ip
 }
 
 

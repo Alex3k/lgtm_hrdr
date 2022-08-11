@@ -71,3 +71,24 @@ resource "helm_release" "gem" {
     google_storage_bucket.gem_storage_tsdb
   ]
 }
+
+resource "google_compute_address" "auth_proxy_ip" {
+  name   = "${var.owner_name}-authproxy-${var.gcp_region}-ip"
+  region = var.gcp_region
+}
+
+resource "helm_release" "auth_proxy" {
+  chart = "./authproxy-helm-chart"
+  name  = "${var.authproxy_name_prefix}-authproxy-${var.gcp_region}"
+
+  values = [
+    templatefile("${path.module}/authproxy_values.tftpl", {
+      gem_gateway_url = "http://${var.gem_cluster_name}-mimir-gateway:8080"
+      loadbalancer_ip = google_compute_address.auth_proxy_ip.address
+    })
+  ]
+  depends_on = [
+    google_compute_address.auth_proxy_ip
+  ]
+}
+

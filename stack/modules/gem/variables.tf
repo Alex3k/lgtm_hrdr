@@ -67,5 +67,8 @@ variable "oidc_access_policy_claim" {
   nullable    = false
 }
 
-
-
+variable "authproxy_name_prefix" {
+  type        = string
+  description = "The prefix for authproxy. This will follow the format {prefix}-authproxy-{region}"
+  nullable    = false
+}

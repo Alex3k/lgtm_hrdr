@@ -1,10 +1,7 @@
-replicaCount: 3
+replicaCount: 1
 gem:
   # Ensure you include http/https as a prefix to the gateway
   gateway: ${gem_gateway_url}
-
-gel:
-  gateway: ${gel_gateway_url}
 
 service:
   type: LoadBalancer
@@ -15,7 +12,7 @@ resources: {}
 
 autoscaling:
   enabled: true
-  minReplicas: 3
+  minReplicas: 1
   maxReplicas: 100
   targetCPUUtilizationPercentage: 80
 

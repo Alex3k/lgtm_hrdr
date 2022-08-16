@@ -1,7 +1,7 @@
 # Introduction
 This project uses GCP to deploy a K8s cluster and deploy GEM, GEL, and Grafana within it and all the require components for that to work across two regions. With this, you can see GEM, GEL and GE working in a fully HA and DR resistant environment. This can be verified by deploying everything and then destroying a region and noticing that everything still works.
 
-** You can only use this project if you work at Grafana Labs and have the ability to create licenses or you are working with Grafana Labs and can request a license **
+**You can only use this project if you work at Grafana Labs and have the ability to create licenses or you are working with Grafana Labs and can request a license**
 
 For each region this project will deploy spread 
 - Grafana Enterprise Metrics (GEM) deployed across three zones

@@ -100,7 +100,7 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 	- Set the Token Claim name to be "Grafana/access_policies"
 	- Set the Claim value to be "tenant1-ap"
 	- Set the Claim JSON type to string
-	- Set Add to ID token, Add to access token, Add to userinfo and Aadd to acess token response to On
+	- Set Add to ID token, Add to access token, Add to userinfo and add to access token response to On
 3. Follow step 8 above and set the name to "data_shipper_tenant1"
 	- Make sure to set the "Client Authentication" to be "client secret sent as basic auth"
 	- Set "Hide on Login Page" to on
@@ -128,7 +128,7 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 5. ** Note: The Grafana Agent won't ship data until you've configured the Enterprise Metrics Plugin (see below) **
 
 ## Step 4) Deploy the GE Global Load Balance
-1. To make it easier to destroy regions, I have seperated this out into it's own Terraform project.
+1. To make it easier to destroy regions, I have separated this out into it's own Terraform project.
 2. Go int the ge_lb folder
 3. Update the vars.tfvars file to have relevant variables for you. Make sure you read the instructions at the top.
 4. `terraform init`
@@ -173,12 +173,12 @@ Go into the stack directory and use the below:
 - TO DO
 See chat with Aengus in chat
 
-# Reconsiling data after a failure
-In the event where there is a major DR event and an entire region goes offline, you would need to perform data reconsilation when the region comes back on line to ensure that both region a and region b are back in sync. This could also happen if the network is unavailable within a region from the data shippers or a regions GEM/GEL cluster goes offline. The agent (if using Grafana Agent/Promtail/etc) should buffer the data for a period of time (depending on settings). So if it's a short outage the agent will ship the buffered data once back online. However this is a finate period of time.
+# Reconciling data after a failure
+In the event where there is a major DR event and an entire region goes offline, you would need to perform data reconciliation when the region comes back on line to ensure that both region a and region b are back in sync. This could also happen if the network is unavailable within a region from the data shippers or a regions GEM/GEL cluster goes offline. The agent (if using Grafana Agent/Promtail/etc) should buffer the data for a period of time (depending on settings). So if it's a short outage the agent will ship the buffered data once back online. However this is a finate period of time.
 
 Another option is to deploy Kafka between your data shippers and GEM/GEL to buffer data for as long as required by your Recovery Point Objective (RPO). However that is out of scope of this project.
 
-An alternative option is once both regions are operational again, the object store from the region that stayed live can be duplicated to the object store which went offline. This way it would ensure the historical data is in sync whilst both recieve latest data. This could be a very costly and long exercise and is out of scope of this project.
+An alternative option is once both regions are operational again, the object store from the region that stayed live can be duplicated to the object store which went offline. This way it would ensure the historical data is in sync whilst both receive latest data. This could be a very costly and long exercise and is out of scope of this project.
 
 # Known Issues
 - When deploying Grafana to GKE, a GCP Network Endpoint Group (NEG) is created for each zone Grafana is deployed in. This is detailed within the "Terraform K8s Workaround" section above. It seems when deleting that service GKE doesn't delete the automatically created NEG and it lingers. This doesn't seem to have any cost implication or performance implication. It's just untidy.

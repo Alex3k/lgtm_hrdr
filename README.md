@@ -42,18 +42,19 @@ For this project, I am using Keycloak as my OIDC provider. You can spin up a fre
 
 ### GEM, GEL & Grafana OIDC
 This client will be used by Grafana, GEM and GEL for authentication and authorization.
-1. Create a new client called "gex_ge" by setting the new clients "Client ID" to "gex_ge" and set the protocol to "openid-connect". Ignore the Root URL
+1. Create a new deployment and give a name such as "keycloak-gex-ha-dr-test". It takes a while for them to deploy it, check your emails reguarly. Once created open the KeyCloak Concolse with the credentials they emailed you.
+2. Create a new client by opening Clients from the menu. Create one called "gex_ge" by setting the new clients "Client ID" to "gex_ge" and set the protocol to "openid-connect". Ignore the Root URL
 	- Within the client settings, set the following and ignore the rest:
 		- Access Type: Confidential
 		- Valid Redirect URLS: *
 		- Direct Grant Flow (found under Authentication Flow Overrides): direct grant
 	- Click Save
-	- Within Credentials:
+	- Within the Credentials tab:
 		- Take note of the secret, you will need it later
-2. Create a new Role called "Grafana/Admin"
-3. Create a new Group called "Grafana/Admin"
-4. Within the Group, go to Role Mappings and add Grafana/Admin role to the Assigned Roles table
-5. Create a User
+3. Create a new Role called "Grafana/Admin" by using the Role option from the main left hand menu. When you click save it may show an error but still worked.
+4. Create a new Group called "Grafana/Admin" by using the Group option from the main left hand menu. When you click save it may show an error but still worked.
+5. Within the Group, go to Role Mappings and add Grafana/Admin role to the Assigned Roles table. No need to save it, it happens automagically.
+6. Create a User using the main left hand menu option. This user will be who logs into Grafana.
 	- Set the username to something reasonable - I will use "akc"
 	- Set the Email, first and last name. You don't have to use a real email
 	- Ensure User Enabled is "On"
@@ -64,7 +65,7 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 	- Open the user up and click Attributes
 	- Create a new attribute called "Grafana/access_policies" and set the value to be "tenant1-ap", click add on the right and then save
 	- Go to Role Mappings and ensure "Grafana/Admin" is under Effective Roles. If not, you may not have added the user to the Grafana/Admin group. Verify this by going to the Groups tab.
-6. Create a Client Scope 
+7. Create a Client Scope. To do this use the Client Scope on the main menu
 	- Set the name to be "Grafana/access_policies" 
 	- Ensure the protocol is "openid-connect"
 	- Set Display on Consent Screen to "Off"
@@ -76,12 +77,12 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 		- Set the Token Claim Name to be Grafana/access_policies
 		- Ensure Claim JSON type is String
 		- Ensure "add to ID token", "Add to access token",  "Multivalued" "Add to userinfo" are on
-		- Ensure  are on
 		- Click Save
-7. Go back to your client called "gex_ge" and click on the Client Scopes tab
+7. Using the main left hand menu, open Client Scopes, select the "roles" scope, click on the "Mappers" tab, click on the "realm roles" mapper, ensure that "Add to ID token", "Add to Access token" and "Add to userinfo" are set to "On".
+8. Go back to your client called "gex_ge" and click on the Client Scopes tab
 	- Add "Grafana/access_policies" to the "Assigned Default Client Scopes" box
-	- Click on "Evaluate" under Client scopes, select the user you created - in my case "akc" and click evaluate. Under "Generated User Info" you should see "realm_access.roles" contained "Grafana/Admin" and "Grafana/access_policies" containing "tenant1-ap". If not, revaluate the above, you can't proceed without this.
-8. Finally, we need to add the Identity Provider. Click on Identity Providers and add a new OpenID Connect provider
+	- Click on "Evaluate" under Client scopes, select the user you created - in my case "akc" and click evaluate. Under "Generated User Info" you should see "realm_access.roles" contained "Grafana/Admin" and "Grafana/access_policies" containing "tenant1-ap". If not, revaluate the above, you can't proceed without this. When clicking on Evaluate an error often showed but didn't mean anything.
+9. Finally, we need to add the Identity Provider. Click on Identity Providers and add a new OpenID Connect provider
 	- Set the name to be "gex_ge"
 	- Ensure "Enabled" is set to On
 	- In a new tab, open the Realm Settings option on the left hand side Configure menu and click on the "OpenID Endpoint Configuration" Endpoint. 
@@ -101,7 +102,7 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 	- Set the Claim value to be "tenant1-ap"
 	- Set the Claim JSON type to string
 	- Set Add to ID token, Add to access token, Add to userinfo and add to access token response to On
-3. Follow step 8 above and set the name to "data_shipper_tenant1"
+3. Follow step 9 above and set the name to "data_shipper_tenant1"
 	- Make sure to set the "Client Authentication" to be "client secret sent as basic auth"
 	- Set "Hide on Login Page" to on
 
@@ -160,7 +161,6 @@ This client will be used by Grafana, GEM and GEL for authentication and authoriz
 
 # Testing the DR Capability
 ## Destroying a region
-
 You can tell the region you are in by going to the Grafana Login screen. I have configured it to show the current region. To test the DR capability, I recommend killing off that region. Once you have done this it will take a minute or two for the LB to switch over.
 
 Due to Grafana not configuring the plugins correctly (likely an error on my side when configuring the side car) you will most likely need to configure the plugins again. You won't need to create the tenants/access tokens again though.

@@ -14,13 +14,13 @@ For each region this project will deploy spread
 - GCP GCloud - https://cloud.google.com/sdk/docs/install
 - JQ - https://stedolan.github.io/jq/download/
 
-# Grafana Enterprise Global Load Balancer Terraform K8s Workaround
-Within the Grafana Helm Chart, we add an annotation to the service ` cloud.google.com/neg: '{"exposed_ports":{"3000":{}}}'` this created Network Endpoint Groups in GCP. This is required to have a Global Load Balancer. The challenge is that this is created automagically and therefore Terraform is unaware of it. To this end, we need to use the "scripts/get-gcp-negs.sh" script which uses the gcloud CLI tool to get the Network Endpoint Groups which are magically created by GKE. JQ is required for this to parse the response from the gcloud CLI tool. This is then used to created a GCP backend service.
+# Worked around required within Terraform for Grafana Enterpise Global Load Balancer
+Within the Grafana Helm Chart, we add an annotation to the service ` cloud.google.com/neg: '{"exposed_ports":{"3000":{}}}'` this created Network Endpoint Groups (NEG) in GCP. This is required to have a Global Load Balancer. The challenge is that this is created automagically and therefore Terraform is unaware of it. To this end, we need to use the "scripts/get-gcp-negs.sh" script which uses the gcloud CLI tool to get the Network Endpoint Groups which are magically created by GKE. JQ is required for this to parse the response from the gcloud CLI tool. This is then used to created a GCP backend service.
 
 # Resources created in GCP per region
 - Kubernetes cluster with 1 node in 3 zones
 - CloudSQL MySQL instance & user
-- Static IP for the AuthProxy
+- Static IP for the GEM AuthProxy
 - 3 GCS buckets for GEM
 - 1 GCS buckets for GEL
 
@@ -35,7 +35,7 @@ Within the Grafana Helm Chart, we add an annotation to the service ` cloud.googl
 
 # Configuration
 ## Creating the GCP Service Account
-To run any of this within GCP, you will need to create a GCP service account which will be used throughout. I have only tested using "Editor" permissions due to limited time however the "Resources created in GCP per region" section above lists what is created.
+To run any of this within GCP, you will need to create a GCP service account which will be used throughout. I have only tested using "Editor" permissions due to limited time however the "Resources created in GCP per region" section above lists what is created to narrow the permissions as you see fit.
 
 ## Setting up OIDC in Keycloak
 For this project, I am using Keycloak as my OIDC provider. You can spin up a free realm through Cloud IAM (https://www.cloud-iam.com/). Sadly the Terraform provider requires a paid version. A provider for Keycloak was chosen instead of hosting within this project is because this is purely focusing on managing our technologies over third parties.

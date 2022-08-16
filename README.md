@@ -169,9 +169,8 @@ Go into the stack directory and use the below:
 1. Destroy Region A - `terraform destroy -target google_container_cluster.region_a -var-file vars.tfvars`
 2. Destroy Region B - `terraform destroy -target google_container_cluster.region_b -var-file vars.tfvars`
 
-# Keeping all the Grafana's in sync
-- TO DO
-See chat with Aengus in chat
+# Keeping everything in sync
+All updates to Grafana / GEX and the G-Agent need to be through a GitOps workflow to ensure its replicated to both regions.
 
 # Reconciling data after a failure
 In the event where there is a major DR event and an entire region goes offline, you would need to perform data reconciliation when the region comes back on line to ensure that both region a and region b are back in sync. This could also happen if the network is unavailable within a region from the data shippers or a regions GEM/GEL cluster goes offline. The agent (if using Grafana Agent/Promtail/etc) should buffer the data for a period of time (depending on settings). So if it's a short outage the agent will ship the buffered data once back online. However this is a finate period of time.

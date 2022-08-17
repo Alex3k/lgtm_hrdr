@@ -1,8 +1,3 @@
-// Instructions - READ ME!
-// To save updating many of these manually:
-// 	- Do a find and replace on "akc" and replace that with a no spaces unique identifier. Your initials maybe.
-//	- All other variables that need replacing are found under the heading "That Need Changing". Variables under the "Safe Default" heading 	will either be updated by the "akc" find and replace or don't need changing. All of these variables have a comment post fixed "update_me"
-
 // --------------------------------------------------------
 // Common Safe Default Variables 
 gcp_region_a             = "us-central1"
@@ -13,10 +8,10 @@ oidc_access_policy_claim = "Grafana/access_policies"
 
 // --------------------------------------------------------
 // Common Variables That Need Changing
-gcp_project_id        = "solutions-engineering-248511"                         // update_me
-gcp_svc_acc_file_path = "/Users/akc/Desktop/Playground/dr/gcp-svc-acc.json"    // update_me
-owner_name            = "alexkirtleyclose"                                     // update_me
-oidc_issuer_url       = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc" // update_me
+gcp_project_id        = "solutions-engineering-248511"                         
+gcp_svc_acc_file_path = "/Users/akc/Desktop/Playground/dr/gcp-svc-acc.json"    
+owner_name            = "alexkirtleyclose"                                     
+oidc_issuer_url       = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc" 
 
 // --------------------------------------------------------
 // GEM Safe Default Variables
@@ -27,8 +22,8 @@ gem_b_cluster_name       = "akc-gem-europe"
 
 // --------------------------------------------------------
 // GEM Variables That Need Changing
-gem_a_license_file = "/Users/akc/Desktop/Playground/dr/stack/gem_uscentral_license.jwt" // update_me
-gem_b_license_file = "/Users/akc/Desktop/Playground/dr/stack/gem_europe_license.jwt"    // update_me
+gem_a_license_file = "/Users/akc/Desktop/Playground/dr/stack/gem_uscentral_license.jwt" 
+gem_b_license_file = "/Users/akc/Desktop/Playground/dr/stack/gem_europe_license.jwt"    
 
 // --------------------------------------------------------
 // GEL Safe Default Variables
@@ -38,8 +33,8 @@ gel_b_cluster_name       = "akc-gel-europe"
 
 // --------------------------------------------------------
 // GEL Variables That Need Changing
-gel_a_license_file = "/Users/akc/Desktop/Playground/dr/stack/gel_uscentral_license.jwt" // update_me
-gel_b_license_file = "/Users/akc/Desktop/Playground/dr/stack/gel_europe_license.jwt"    // update_me
+gel_a_license_file = "/Users/akc/Desktop/Playground/dr/stack/gel_uscentral_license.jwt" 
+gel_b_license_file = "/Users/akc/Desktop/Playground/dr/stack/gel_europe_license.jwt"    
 
 // --------------------------------------------------------
 // Grafana Enterprise Safe Default Variables
@@ -53,15 +48,15 @@ grafana_b_mysql_database_name = "akc-europe-ge-database"
 
 // --------------------------------------------------------
 // Grafana Enterprise Safe Default Variables
-oidc_client_secret = "hfQDPJIHd1SuxlyjbTUJt3SFpowJzfLt"                                                      // update_me
-oidc_token_url     = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc/protocol/openid-connect/token"    // update_me
-oidc_userinfo_url  = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc/protocol/openid-connect/userinfo" // update_me
-oidc_auth_url      = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc/protocol/openid-connect/auth"     // update_me
+oidc_client_secret = "Qmsl8zAVdDmvZt3861D0yft9Vq9LjrWA"                                                      
+oidc_token_url     = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc/protocol/openid-connect/token"    
+oidc_userinfo_url  = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc/protocol/openid-connect/userinfo" 
+oidc_auth_url      = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc/protocol/openid-connect/auth"     
 
 // --------------------------------------------------------
 // Grafana Enterprise Variables That Need Changing
-grafana_global_ip_address   = "34.110.135.205"                                        // update_me
-grafana_global_license_file = "/Users/akc/Desktop/Playground/dr/stack/ge_license.jwt" // update_me
+grafana_global_ip_address   = "34.110.135.205"                                        
+grafana_global_license_file = "/Users/akc/Desktop/Playground/dr/stack/ge_license.jwt" 
 
 // --------------------------------------------------------
 // Grafana Agent Safe Default Variables
@@ -70,6 +65,6 @@ data_shipper_oidc_client_id = "data_shipper_tenant1"
 
 // --------------------------------------------------------
 // Grafana Agent Variables That Need Changing
-data_shipper_oidc_client_secret = "8ukCPNmwSDKCk0ziwWcFYjLDck4QvNZC"                                                   // update_me
-data_shipper_oidc_token_url     = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc/protocol/openid-connect/token" // update_me
+data_shipper_oidc_client_secret = "nvbcoab4AmjFxWIks0zWESSDGpX3t493"                                                   
+data_shipper_oidc_token_url     = "https://lemur-14.cloud-iam.com/auth/realms/hadr_oidc/protocol/openid-connect/token" 
 

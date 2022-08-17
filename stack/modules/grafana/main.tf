@@ -104,6 +104,7 @@ resource "helm_release" "ge" {
   chart      = "grafana"
   name       = var.ge_deployment_name
   repository = "https://grafana.github.io/helm-charts"
+  version = "6.32.14"
 
   values = [
     templatefile("${path.module}/ge_overrides.tftpl", {

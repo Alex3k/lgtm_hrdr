@@ -53,6 +53,7 @@ resource "helm_release" "gem" {
   chart      = "mimir-distributed"
   name       = var.gem_cluster_name
   repository = "https://grafana.github.io/helm-charts"
+  version = "3.1.0-weekly.199"
 
   values = [
     templatefile("${path.module}/gem_values.tftpl", {

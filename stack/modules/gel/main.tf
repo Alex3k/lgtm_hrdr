@@ -40,6 +40,7 @@ resource "helm_release" "gel" {
   chart      = "loki-simple-scalable"
   name       = var.gel_cluster_name
   repository = "https://grafana.github.io/helm-charts"
+  version = "1.8.9"
 
   values = [
     templatefile("${path.module}/gel_values.tftpl", {

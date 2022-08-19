@@ -163,7 +163,7 @@ To set up OIDC, I am using a free Keycloak service hosted by https://www.cloud-i
 	- Ensure you have set the OIDC settings from step 5.15
 3. `terraform init`
 4. `terraform apply -var-file vars.tfvars` - This will take 30 to 45 minutes. 
-5. **Note: The Grafana Agent won't ship data until you've configured the Enterprise Metrics Plugin (see below)**
+5. **Note: The Grafana Agent won't ship data until you've configured the Enterprise Metrics/Logs Plugin (see below)**
 
 ## Step 7) Deploy the GE Global Load Balancer
 To make it easier to destroy regions, I have separated this out into it's own Terraform project.

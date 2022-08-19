@@ -66,10 +66,10 @@ To run any of this within GCP, you will need to create a GCP service account whi
 	- For GEL in Europe use akc-gel-europe
 	- For GEL in US use akc-gel-uscentral
 9) Download those licenses one by one and name them to be the name of the license with a .jwt file type. Update stack/vars.tfvars to point at each respective license. The variables that need updating are:
-	- gem_a_license_file (for europe)
-	- gem_b_license_file (for uscentral)
-	- gel_a_license_file (for europe)
-	- gel_b_license_file (for uscentral)
+	- gem_a_license_file (for uscentral)
+	- gem_b_license_file (for europe)
+	- gel_a_license_file (for uscentral)
+	- gel_b_license_file (for europe)
 
 ## Step 5) GEX OIDC Set Up
 To set up OIDC, I am using a free Keycloak service hosted by https://www.cloud-iam.com/. This saves deploying Keycloak within this process as that's out of scope. OIDC is a core backbone for DR. Grafana, GEM, GEL and Grafana Agent use it.

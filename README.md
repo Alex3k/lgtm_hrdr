@@ -51,7 +51,7 @@ To run any of this within GCP, you will need to create a GCP service account whi
 1. Go into the ge_infra folder
 2. Within vars.tfvars:
 	- Ensure that you have updated gcp_svc_acc_file_path and gcp_project_id from the above Step 2
-	- Update owner_name with your name without any spaces
+	- Update owner_name with your name without any spaces. This variable is used throughout ge_infra, ge_lb and stack. This is going to be prefixed in front of everything created within GCP to clearly identify the owner. This is required as not all GCP components allow labels to be created through terraform.
 3. `terraform init`
 4. `terraform apply -var-file vars.tfvars`
 5. This will output one ip addresses which is for the global load balancer. Create one GE license with the Grafana Enterprise Metrics & Logs Plugin. The URL should be "http://{IP}/". Don't add a port. Download the license 

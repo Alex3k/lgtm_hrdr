@@ -9,10 +9,6 @@ variable "gcp_svc_acc_file_path" {
   type        = string
   description = "The path to a GCP service account JSON license file which has Editor permissions to the GCP project"
   nullable    = false
-  validation {
-    condition     = fileexists(var.gcp_svc_acc_file_path)
-    error_message = "The file must exist"
-  }
 }
 
 variable "oidc_client_id" {

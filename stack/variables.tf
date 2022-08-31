@@ -11,10 +11,6 @@ variable "gcp_svc_acc_file_path" {
   type        = string
   description = "The path to a GCP service account JSON license file which has Editor permissions to the GCP project"
   nullable    = false
-  validation {
-    condition     = fileexists(var.gcp_svc_acc_file_path)
-    error_message = "The file must exist"
-  }
 }
 
 variable "owner_name" {
@@ -81,11 +77,6 @@ variable "gem_a_license_file" {
   type        = string
   description = "The file path to the GEM license file for zone A"
   nullable    = false
-
-  validation {
-    condition     = fileexists(var.gem_a_license_file)
-    error_message = "The file must exist"
-  }
 }
 
 variable "gem_a_cluster_name" {
@@ -98,11 +89,6 @@ variable "gem_b_license_file" {
   type        = string
   description = "The file path to the GEM license file for zone B"
   nullable    = false
-
-  validation {
-    condition     = fileexists(var.gem_b_license_file)
-    error_message = "The file must exist"
-  }
 }
 
 variable "gem_b_cluster_name" {
@@ -155,11 +141,6 @@ variable "gel_a_license_file" {
   type        = string
   description = "The file path to the GEL license file for zone A"
   nullable    = false
-
-  validation {
-    condition     = fileexists(var.gel_a_license_file)
-    error_message = "The file must exist"
-  }
 }
 
 variable "gel_a_cluster_name" {
@@ -172,11 +153,6 @@ variable "gel_b_license_file" {
   type        = string
   description = "The file path to the GEL license file for zone B"
   nullable    = false
-
-  validation {
-    condition     = fileexists(var.gel_b_license_file)
-    error_message = "The file must exist"
-  }
 }
 
 variable "gel_b_cluster_name" {
@@ -198,11 +174,6 @@ variable "grafana_global_license_file" {
   type        = string
   description = "The file path to the GE license file."
   nullable    = false
-
-  validation {
-    condition     = fileexists(var.grafana_global_license_file)
-    error_message = "The file must exist"
-  }
 }
 
 variable "grafana_a_gcp_region" {

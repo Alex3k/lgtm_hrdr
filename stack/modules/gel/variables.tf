@@ -3,10 +3,6 @@ variable "gcp_svc_acc_file_path" {
   type        = string
   description = "The path to a GCP service account JSON license file which has Editor permissions to the GCP project"
   nullable    = false
-  validation {
-    condition     = fileexists(var.gcp_svc_acc_file_path)
-    error_message = "The file must exist"
-  }
 }
 
 variable "gcp_gcs_bucket_name" {
@@ -44,11 +40,6 @@ variable "gel_license_file" {
   type        = string
   description = "The file path to the GEL license file for zone A"
   nullable    = false
-
-  validation {
-    condition     = fileexists(var.gel_license_file)
-    error_message = "The file must exist"
-  }
 }
 
 variable "gel_admin_token_override" {
